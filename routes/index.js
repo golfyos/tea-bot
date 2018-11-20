@@ -73,7 +73,7 @@ const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\
 const COMMAND_WORDS = [MESSAGE_START_ORDER,MESSAGE_END_ORDER]
 const ADMIN_GOLF_ID = "Ud4176bdaea15ecbd5ef5841d2484f815"
 const ADMIN_PJOM_ID = "U0695ecbf766079f40dc52f5ce62ec8a1"
-const ADMIN_ID = ["Ud4176bdaea15ecbd5ef5841d2484f815","U0695ecbf766079f40dc52f5ce62ec8a1"]
+const ADMIN_IDs = ["Ud4176bdaea15ecbd5ef5841d2484f815","U0695ecbf766079f40dc52f5ce62ec8a1"]
 const MESSAGE_GREETING_START_ORDER = "=================\n====เริ่มสั่งชาไข่มุกได้====\n================="
 const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
 const MESSAGE_ORDER_WORD = "สั่ง"
@@ -89,7 +89,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
   let isCanOrder = localStorage.getItem('isCanOrder') == "true"
   if(type==TYPE_MESSAGE && message.type==TYPE_MESSAGE_TEXT){
     let msgInput = message.text.toLowerCase()
-    if(msgInput==MESSAGE_START_ORDER && (userId==ADMIN_GOLF_ID||userId==ADMIN_PJOM_ID)){
+    if(msgInput==MESSAGE_START_ORDER && ADMIN_IDs.includes(userId)){
       if(!isCanOrder){
         // timestamp
         localStorage.setItem('isCanOrder',true)
@@ -122,7 +122,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
       responseData(res)
       return ;
     }
-    else if(msgInput == MESSAGE_END_ORDER && (userId==ADMIN_GOLF_ID||userId==ADMIN_PJOM_ID)){
+    else if(msgInput == MESSAGE_END_ORDER && ADMIN_IDs.includes(userId)){
       if(isCanOrder){
         /* reply order is ended message and show summary */
         // end of timestamp
@@ -176,7 +176,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
 
     }
     
-    else if(msgInput == MESSAGE_SUMMARY && userId==ADMIN_GOLF_ID){
+    else if(msgInput == MESSAGE_SUMMARY && ADMIN_IDs.includes(userId)){
       /* Get Current Order */
       const _id_ = localStorage.getItem('id')
       showSummary(_id_,replyToken)
