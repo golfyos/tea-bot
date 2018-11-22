@@ -2,13 +2,36 @@ import express from 'express';
 import axios from 'axios'
 import config from '../config/config'
 const router = express.Router();
-import session from 'express-session'
-
 import localStorage from 'localStorage'
 import {responseData,makeTextMessageObj,makeStickerMessageObj} from '../util/data_util'
 import Order from '../model/order'
 import User from '../model/user'
 import History from '../model/history'
+
+const CALL_GET_ALL_MEMBER = groupId => `https://api.line.me/v2/bot/group/${groupId}/members/ids`
+const TYPE_MESSAGE = "message"
+const MESSAGE_START_ORDER = "start order"
+const MESSAGE_END_ORDER = "end order"
+const CALL_REPLY_MESSAGE = "https://api.line.me/v2/bot/message/reply"
+const CALL_GROUP_MEMBER_GET_PROFILE = (groupId,userId)=> `https://api.line.me/v2/bot/group/${groupId}/member/${userId}`
+const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
+const TYPE_MESSAGE_TEXT = "text"
+const HEADER = {
+  headers : {
+    "Content-Type" : "application/json",
+    "Authorization" : "Bearer " + config.channelAccessToken
+  }
+}
+const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\"\nExample: \nสั่ง-ชานมไข่มุก หวาน900%-ไก่"
+const COMMAND_WORDS = [MESSAGE_START_ORDER,MESSAGE_END_ORDER]
+const ADMIN_GOLF_ID = "Ud4176bdaea15ecbd5ef5841d2484f815"
+const ADMIN_PJOM_ID = "U0695ecbf766079f40dc52f5ce62ec8a1"
+/* golf p'jom jah */
+const ADMIN_IDs = ["Ud4176bdaea15ecbd5ef5841d2484f815","U0695ecbf766079f40dc52f5ce62ec8a1","Ub2080c10bf84a1ef1915e74ef251e14e"]
+const MESSAGE_GREETING_START_ORDER = "=================\n====เริ่มสั่งชาไข่มุกได้====\n================="
+const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
+const MESSAGE_ORDER_WORD = "สั่ง"
+const MESSAGE_SUMMARY = "สรุป"
 
 /* GET index page. */
 router.get('/', (req, res) => {
@@ -42,7 +65,6 @@ router.get('/send/message',(req,res)=>{
     
 })  
 
-const CALL_GET_ALL_MEMBER = groupId => `https://api.line.me/v2/bot/group/${groupId}/members/ids`
 
 router.get('/get/profile',(req,res)=>{
   axios.get(CALL_GROUP_MEMBER_GET_PROFILE(config.testGroup,ADMIN_GOLF_ID),HEADER)
@@ -56,34 +78,12 @@ router.get('/get/profile',(req,res)=>{
 })
 
 
-const TYPE_MESSAGE = "message"
-const MESSAGE_START_ORDER = "start order"
-const MESSAGE_END_ORDER = "end order"
-const CALL_REPLY_MESSAGE = "https://api.line.me/v2/bot/message/reply"
-const CALL_GROUP_MEMBER_GET_PROFILE = (groupId,userId)=> `https://api.line.me/v2/bot/group/${groupId}/member/${userId}`
-const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
-const TYPE_MESSAGE_TEXT = "text"
-const HEADER = {
-  headers : {
-    "Content-Type" : "application/json",
-    "Authorization" : "Bearer " + config.channelAccessToken
-  }
-}
-const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\"\nExample: \nสั่ง-ชานมไข่มุก หวาน900%-ไก่"
-const COMMAND_WORDS = [MESSAGE_START_ORDER,MESSAGE_END_ORDER]
-const ADMIN_GOLF_ID = "Ud4176bdaea15ecbd5ef5841d2484f815"
-const ADMIN_PJOM_ID = "U0695ecbf766079f40dc52f5ce62ec8a1"
-const ADMIN_IDs = ["Ud4176bdaea15ecbd5ef5841d2484f815","U0695ecbf766079f40dc52f5ce62ec8a1"]
-const MESSAGE_GREETING_START_ORDER = "=================\n====เริ่มสั่งชาไข่มุกได้====\n================="
-const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
-const MESSAGE_ORDER_WORD = "สั่ง"
-const MESSAGE_SUMMARY = "สรุป"
 
 
 router.post("/webhook/callback",async (req,res,next)=>{
 
   const {type,source:{userId},message,replyToken,timestamp} = req.body.events[0]
-  // console.log(req.body.events)
+  console.log(message, " : ",userId)
 
   /* Check is start or end order */
   let isCanOrder = localStorage.getItem('isCanOrder') == "true"
@@ -122,10 +122,13 @@ router.post("/webhook/callback",async (req,res,next)=>{
       responseData(res)
       return ;
     }
+    /**
+     * Check is End Order Command , Display Summary of orders , Record order of each user to database for Data Analytic
+     * 
+     */
     else if(msgInput == MESSAGE_END_ORDER && ADMIN_IDs.includes(userId)){
       if(isCanOrder){
         /* reply order is ended message and show summary */
-        // end of timestamp
         localStorage.setItem('isCanOrder',false)
         const _id_ = localStorage.getItem('id')
         const resultData = await showSummary(_id_,replyToken)
@@ -143,11 +146,6 @@ router.post("/webhook/callback",async (req,res,next)=>{
             if(result != null){
               result.orders.push(order.order_info.orderName)
               await result.save().catch(err=>console.log(err))
-              // await User.updateOne({userId:order.userId},{
-              //   $push: {
-              //     orders: order.order_info.orderName
-              //   }
-              // })
             }else{
               const userProfile = await axios.get(CALL_GROUP_MEMBER_GET_PROFILE(config.milkTeaGroup,order.userId),HEADER)
               const displayNameData = userProfile.data.displayName
@@ -176,6 +174,9 @@ router.post("/webhook/callback",async (req,res,next)=>{
 
     }
     
+    /**
+     * Display Order Summary by Admin only
+     */
     else if(msgInput == MESSAGE_SUMMARY && ADMIN_IDs.includes(userId)){
       /* Get Current Order */
       const _id_ = localStorage.getItem('id')
@@ -217,14 +218,15 @@ router.post("/webhook/callback",async (req,res,next)=>{
               },(err,results)=>{
                 console.log("Added : " ,results)
               })
+
+              const bodyData = {
+                "replyToken" : replyToken,
+                "messages" : messageObj
+              }
+              await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
             }
           }
 
-          const bodyData = {
-            "replyToken" : replyToken,
-            "messages" : messageObj
-          }
-          await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
        }
        /* Not Record , Just a chat not order */
        else{
@@ -243,6 +245,13 @@ router.post("/webhook/callback",async (req,res,next)=>{
   responseData(res)
 })
 
+/**
+ * 
+ * @param {*} _id_ 
+ * @param {*} replyToken 
+ * @return Promise<any>
+ * @description Show order summary from id of day's order and reply line group by replyToken
+ */
 const showSummary = (_id_,replyToken) => {
   return new Promise((resolve,reject)=>{
     if(_id_ != null){
