@@ -32,6 +32,8 @@ const MESSAGE_GREETING_START_ORDER = "=================\n====เริ่มส�
 const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
 const MESSAGE_ORDER_WORD = "สั่ง"
 const MESSAGE_SUMMARY = "สรุป"
+const MESSAGE_PAY_IMAGE = "pay-"
+const JOM_PROMPT_PAY_IMAGE = "https://promptpay.io/0886253600/"
 
 /* GET index page. */
 router.get('/', (req, res) => {
@@ -182,6 +184,26 @@ router.post("/webhook/callback",async (req,res,next)=>{
       const _id_ = localStorage.getItem('id')
       showSummary(_id_,replyToken)
     }
+
+    else if(msgInput.includes("pay-") && ADMIN_IDs.includes(userId)){
+      let cost = msgInput.split("-")
+      
+      if(cost.length>1){
+        cost[1] = cost[1].trim()
+        const promptpayUrl = JOM_PROMPT_PAY_IMAGE+cost[1]
+        const imgData = {
+          "type":"image",
+          "originalContentUrl" : promptpayUrl,
+          "previewImageUrl" : promptpayUrl
+        }
+        console.log(promptpayUrl)
+        const bodyData = {
+          to : config.milkTeaGroup,
+          messages: [imgData]
+        }
+        await axios.post(CALL_SEND_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
+      }
+    }
     
     else{
 
@@ -303,5 +325,9 @@ const showSummary = (_id_,replyToken) => {
 }
 
 
+
+router.all("*",(req,res,next)=>{
+  res.redirect("/")
+})
 
 export default router;
