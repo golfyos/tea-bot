@@ -285,33 +285,6 @@ const showSummary = (_id_,replyToken) => {
           for(let order of orders){
             const orderName = order.order_info.orderName
             summaryString = summaryString + orderName + " -> " + order.name + "\n"
-            
-            // await User.findOne({userId:order.userId},async(err,user)=>{
-            //   console.log(user)
-            //   if(user == null){
-    
-            //     let profile = await axios.get(CALL_GROUP_MEMBER_GET_PROFILE(config.testGroup,order.userId),HEADER)
-            //     let displayName = profile.data.displayName
-            //     console.log(displayName)
-    
-            //     summaryString = summaryString + order.name +"\n"
-    
-            //     const newUser = new User({
-            //       userId : order.userId,
-            //       displayName: displayName,
-            //       name: order.name,
-            //       orders:[orderName]
-            //     })
-    
-            //     newUser.save()
-                
-            //   }else{
-            //     summaryString = summaryString + user.name +"\n"
-    
-            //     // Order.findOneAndUpdate({userId:order.userId})
-    
-            //   }
-            // })
           }
           
           await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj(summaryString)]},HEADER)
