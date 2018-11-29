@@ -15,6 +15,7 @@ const MESSAGE_END_ORDER = "end order"
 const CALL_REPLY_MESSAGE = "https://api.line.me/v2/bot/message/reply"
 const CALL_GROUP_MEMBER_GET_PROFILE = (groupId,userId)=> `https://api.line.me/v2/bot/group/${groupId}/member/${userId}`
 const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
+const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
 const TYPE_MESSAGE_TEXT = "text"
 const HEADER = {
   headers : {
@@ -41,6 +42,11 @@ router.get('/', (req, res) => {
     title: 'Express'
   });
 });
+
+router.post("/auth/token",(req,res)=>{
+  const {clientId,clientSecret} = req.body
+  axios.post(CALL_OAUTH_LINE,{},{}).catch(err=>next(err))
+})
 
 router.get('/send/message',(req,res)=>{
   const sendUrl = "https://api.line.me/v2/bot/message/push"
