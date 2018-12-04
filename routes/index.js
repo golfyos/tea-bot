@@ -196,17 +196,31 @@ router.post("/webhook/callback",async (req,res,next)=>{
       
       if(cost.length>1){
         cost[1] = cost[1].trim()
-        const promptpayUrl = JOM_PROMPT_PAY_IMAGE+cost[1]
-        const imgData = {
-          "type":"image",
-          "originalContentUrl" : promptpayUrl,
-          "previewImageUrl" : promptpayUrl
+        
+        if(cost[1]=="any"){
+          const imgData = {
+            "type":"image",
+            "originalContentUrl" : JOM_PROMPT_PAY_IMAGE,
+            "previewImageUrl" : JOM_PROMPT_PAY_IMAGE
+          }
+          const bodyData = {
+            to : config.milkTeaGroup,
+            messages: [imgData]
+          }
+        }else{
+          const promptpayUrl = JOM_PROMPT_PAY_IMAGE+cost[1]
+          const imgData = {
+            "type":"image",
+            "originalContentUrl" : promptpayUrl,
+            "previewImageUrl" : promptpayUrl
+          }
+          console.log(promptpayUrl)
+          const bodyData = {
+            to : config.milkTeaGroup,
+            messages: [imgData]
+          }
         }
-        console.log(promptpayUrl)
-        const bodyData = {
-          to : config.milkTeaGroup,
-          messages: [imgData]
-        }
+
         await axios.post(CALL_SEND_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
       }
     }
