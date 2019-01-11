@@ -8,6 +8,8 @@ import Order from '../model/order'
 import User from '../model/user'
 import History from '../model/history'
 
+import services from './controller'
+
 const CALL_GET_ALL_MEMBER = groupId => `https://api.line.me/v2/bot/group/${groupId}/members/ids`
 const TYPE_MESSAGE = "message"
 const MESSAGE_START_ORDER = "start order"
@@ -34,8 +36,9 @@ const MESSAGE_GREETING_START_ORDER = "=================\n====เริ่มส�
 const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
 const MESSAGE_ORDER_WORD = "สั่ง"
 const MESSAGE_SUMMARY = "สรุป"
-const MESSAGE_PAY_IMAGE = "pay-"
+const MESSAGE_PAY_IMAGE = "pay-yo"
 const JOM_PROMPT_PAY_IMAGE = "https://promptpay.io/0886253600/"
+const PYO_PROMPT_PAY = "https://promptpay.io/1102001023038"
 
 /* GET index page. */
 router.get('/', (req, res) => {
@@ -43,6 +46,8 @@ router.get('/', (req, res) => {
     title: 'Express'
   });
 });
+
+router.use("/services",services)
 
 router.post("/auth/token",(req,res)=>{
   const {clientId,clientSecret} = req.body
@@ -197,26 +202,27 @@ router.post("/webhook/callback",async (req,res,next)=>{
       
       if(cost.length>1){
         cost[1] = cost[1].trim()
-        
-        if(cost[1]=="any"){
-          const imgData = {
+
+        let bodyData = {}
+        let imgData = {}
+
+        if(cost[1]=="yo"){
+          imgData = {
+            "type":"image",
+            "originalContentUrl" : PYO_PROMPT_PAY,
+            "previewImageUrl" : PYO_PROMPT_PAY
+          }
+          bodyData = {
+            to : config.milkTeaGroup,
+            messages: [imgData]
+          }
+        }else if(cost[1]=="jom"){
+          imgData = {
             "type":"image",
             "originalContentUrl" : JOM_PROMPT_PAY_IMAGE,
             "previewImageUrl" : JOM_PROMPT_PAY_IMAGE
           }
-          const bodyData = {
-            to : config.milkTeaGroup,
-            messages: [imgData]
-          }
-        }else{
-          const promptpayUrl = JOM_PROMPT_PAY_IMAGE+cost[1]
-          const imgData = {
-            "type":"image",
-            "originalContentUrl" : promptpayUrl,
-            "previewImageUrl" : promptpayUrl
-          }
-          console.log(promptpayUrl)
-          const bodyData = {
+          bodyData = {
             to : config.milkTeaGroup,
             messages: [imgData]
           }
