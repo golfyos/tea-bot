@@ -6,8 +6,9 @@ import logger from 'morgan';
 import path from 'path';
 // import favicon from 'serve-favicon';
 
-import index from './routes/index';
+import cors from 'cors'
 
+import index from './routes/index';
 import session from 'express-session'
 import mongoose from 'mongoose'
 import config from './config/database'
@@ -24,6 +25,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+
+app.use(cors())
 
 mongoose.connect(config.database,{useNewUrlParser:true})
 const db = mongoose.connection

@@ -3,12 +3,13 @@ import axios from 'axios'
 import config from '../config/config'
 const router = express.Router();
 import localStorage from 'localStorage'
+
 import {responseData,makeTextMessageObj,makeStickerMessageObj} from '../util/data_util'
 import Order from '../model/order'
 import User from '../model/user'
 import History from '../model/history'
-
 import services from './controller'
+import adminController from './admin'
 
 const CALL_GET_ALL_MEMBER = groupId => `https://api.line.me/v2/bot/group/${groupId}/members/ids`
 const TYPE_MESSAGE = "message"
@@ -48,6 +49,7 @@ router.get('/', (req, res) => {
 });
 
 router.use("/services",services)
+router.use('/api/v1',adminController)
 
 router.post("/auth/token",(req,res)=>{
   const {clientId,clientSecret} = req.body
