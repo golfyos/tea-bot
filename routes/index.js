@@ -41,6 +41,30 @@ const MESSAGE_PAY_IMAGE = "pay-yo"
 const JOM_PROMPT_PAY_IMAGE = "https://promptpay.io/0886253600/"
 const PYO_PROMPT_PAY = "https://promptpay.io/1102001023038"
 
+const getAccessToken = async () =>{
+  let config = {
+    HEADER: {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    },
+    body : {
+      "grant_type" : "client_credentials",
+      "client_id" : process.env.CLIENT_ID,
+      "client_secret" : process.env.CLIENT_SECRET
+    }
+  }
+
+  const formData = querystring.stringify(config.body)
+  const content_length = formData.length
+
+  config.HEADER.headers["Content-Length"] = content_length
+
+
+  const token = await axios.post(CALL_OAUTH_LINE,formData,config.HEADER).catch(err=>console.log(err))
+  return token.data.access_token
+}
+
 /* GET index page. */
 router.get('/', (req, res) => {
   res.render('index', {
@@ -311,9 +335,11 @@ const showSummary = (_id_,replyToken) => {
         if(results != null){
           let summaryString = ""
           const orders = results.orders
-          for(let order of orders){
+          
+          for(let [index,order] of orders.entries()){
             const orderName = order.order_info.orderName
-            summaryString = summaryString + orderName + " -> " + order.name + "\n"
+            let counter = (index+1) + ") "
+            summaryString = summaryString + counter + orderName + " -> " + order.name + "\n"
           }
           
           await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj(summaryString)]},HEADER)

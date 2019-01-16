@@ -16,8 +16,8 @@ const getAccessToken = async () =>{
     },
     body : {
       "grant_type" : "client_credentials",
-      "client_id" : "1622053629",
-      "client_secret" : "bc80a788f78e98a829fc6df5f476c5dc"
+      "client_id" : process.env.CLIENT_ID,
+      "client_secret" : process.env.CLIENT_SECRET
     }
   }
 
