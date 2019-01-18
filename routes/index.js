@@ -29,15 +29,20 @@ const HEADER = {
   }
 }
 const USED_GROUP = config.testGroup
-const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\"\nExample: \nสั่ง-ชานมไข่มุก หวาน900%-ไก่"
+const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\"\nExample: \nสั่ง-ชานมไข่มุก หวาน900%-ไก่\n"
+const LINESPACE = "======================\n"
+const EDIT_FORMAT = "How To Edit: \n\"แก้ - <old order> : <new order> - <name>\"\nExample: \nแก้-กระเพาหมูสับ:ข้าวผัดต้มยำไก่-ไก่\n"
+
+const DELETE_FORMAT = "How To Delete: \n\"ลบ - <Your order> - <name>\"\n"
 const COMMAND_WORDS = [MESSAGE_START_ORDER,MESSAGE_END_ORDER]
 const ADMIN_GOLF_ID = "Ud4176bdaea15ecbd5ef5841d2484f815"
 const ADMIN_PJOM_ID = "U0695ecbf766079f40dc52f5ce62ec8a1"
 const ADMIN_PYO_ID = "Ubb429e18e52f145b20fe70f0227062ea";
 /* golf p'jom jah pyo */
 const ADMIN_IDs = ["Ud4176bdaea15ecbd5ef5841d2484f815","U0695ecbf766079f40dc52f5ce62ec8a1","Ub2080c10bf84a1ef1915e74ef251e14e","Ubb429e18e52f145b20fe70f0227062ea"]
-const MESSAGE_GREETING_START_ORDER = "=================\n====เริ่มสั่งได้====\n================="
+const MESSAGE_GREETING_START_ORDER = "=================\n=======เริ่มสั่งได้=======\n================="
 const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
+const BOT_STATUS_VERSION = "Bot Version: 2.0.0\n"
 const MESSAGE_ORDER_WORD = "สั่ง"
 const MESSAGE_EDIT_ORDER = "แก้"
 const MESSAGE_DELETE_ORDER = "ลบ"
@@ -146,7 +151,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
         }else if(msgInput == MESSAGE_START_ORDER_SEVEN){
           orderRestaurant = "เซเว่น"
         }else{
-          orderRestaurant = msg.substring("start order".length+1)
+          orderRestaurant = msgInput.substring("start order".length+1)
         }
         localStorage.setItem('order',orderRestaurant)
         /* response format to order */
@@ -154,7 +159,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
         const messageObj = [
           makeStickerMessageObj(519,2),
           makeTextMessageObj(MESSAGE_GREETING_START_ORDER),
-          makeTextMessageObj(ORDERED_FORMAT),
+          makeTextMessageObj(BOT_STATUS_VERSION+LINESPACE+ORDERED_FORMAT+LINESPACE+EDIT_FORMAT+LINESPACE+DELETE_FORMAT+LINESPACE),
         ]
         const bodyData = {
           "replyToken" : replyToken,
@@ -186,10 +191,13 @@ router.post("/webhook/callback",async (req,res,next)=>{
         })
         await recordData.save().catch(err=>console.log(err))
         
-        for(let order of orders){
+        for(let order of resultData){
           await User.findOne({userId:order.userId},async (err,result)=>{
+            if(err){
+              console.log(err)
+            }
             if(result != null){
-              result.orders.push(order.order_info.orderName)
+              result.orders.push(order.orderName)
               await result.save().catch(err=>console.log(err))
             }else{
               const userProfile = await axios.get(CALL_GROUP_MEMBER_GET_PROFILE(USED_GROUP,order.userId),HEADER)
@@ -199,13 +207,15 @@ router.post("/webhook/callback",async (req,res,next)=>{
                 userId : order.userId,
                 displayName: displayNameData,
                 name: order.name,
-                orders:[order.order_info.orderName]
+                orders:[order.orderName]
               })
 
-              newUser.save().catch(err=>console.log(err))
+              await newUser.save().catch(err=>console.log(err))
             }
           })
         }
+
+        await Order.remove({}).catch(err=>console.log(err))
 
         const responseBody = {
           to : USED_GROUP,
@@ -221,7 +231,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
     /**
      * Display Order Summary by Admin only
      */
-    else if(msgInput == MESSAGE_SUMMARY && ADMIN_IDs.includes(userId)){
+    else if(msgInput == MESSAGE_SUMMARY && ADMIN_IDs.includes(userId) && isCanOrder){
       /* Get Current Order */
       showSummary(replyToken)
     }
@@ -304,34 +314,63 @@ router.post("/webhook/callback",async (req,res,next)=>{
             const chooseOrder = order.split(":")
             const oldOrder = chooseOrder[0]
             const newOrder = chooseOrder[1]
-            Order.findOneAndUpdate({orderName:oldOrder,userId:userId},{
-              $set:{
-                orderName:newOrder
-              }
-            },async (err,result)=>{
-              console.log("Edited: ",result)
-              messageObj.push(makeTextMessageObj("Edited: "+oldOrder + " --> " + newOrder))
-              const bodyData = {
+
+            let bodyData = {}
+            console.log(newOrder)
+            if(newOrder == undefined){
+              messageObj.push(makeTextMessageObj("Wrong Format! ต้องเป็น\nแก้ - <oldOrder>:<newOrder> - ชื่อ"))
+              bodyData = {
                 "replyToken" : replyToken,
                 "messages" : messageObj
               }
-              await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
-            })
+            }else{
 
+              await Order.findOne({orderName:oldOrder,userId:userId},async (err,oldOrderResult)=>{
+                if(oldOrderResult == undefined){
+                  messageObj.push(makeTextMessageObj("Warning:ไม่สามารถแก้ไขแทนกันได้น้ะจ้ะ\nYour Old order Not Found!\nโปรดระบุอออเดอร์เก่าให้ถูกต้อง"))
+                  bodyData = {
+                    "replyToken" : replyToken,
+                    "messages" : messageObj
+                  }
+                }else{
+                  messageObj.push(makeTextMessageObj("Edited: "+oldOrder + " --> " + newOrder))
+                  bodyData = {
+                    "replyToken" : replyToken,
+                    "messages" : messageObj
+                  }
+                  oldOrderResult.orderName = newOrder
+                  await oldOrderResult.save().catch(err=>console.log(err))
+                }
+              })
+            }
+            await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
           }
 
           else if(command == MESSAGE_DELETE_ORDER){
-            Order.findOneAndRemove({userId:userId,orderName:order},async (err,result)=>{
-              if(err){
-                console.log(err)
+
+            await Order.findOne({userId:userId,orderName:order},async(err,result)=>{
+              if(result!=null){
+                console.log("Deleted: ",result)
+                Order.remove({userId:userId,orderName:order},async(err,result2)=>{
+                  if(err){
+                    console.log(err)
+                  }
+                  messageObj.push(makeTextMessageObj("Deleted: "+ order))
+                  const bodyData = {
+                    "replyToken" : replyToken,
+                    "messages" : messageObj
+                  }
+                  await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
+                })
+
+              }else{
+                messageObj.push(makeTextMessageObj("Warning:ไม่สามารถลบแทนกันได้น้ะจ้ะ\nYour order Not Found!\nPlease type your ordered to delete"))
+                const bodyData = {
+                  "replyToken" : replyToken,
+                  "messages" : messageObj
+                }
+                await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
               }
-              console.log("Deleted: ",result)
-              messageObj.push(makeTextMessageObj("Deleted: "+ order))
-              const bodyData = {
-                "replyToken" : replyToken,
-                "messages" : messageObj
-              }
-              await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
             })
           }
 
@@ -368,15 +407,21 @@ const showSummary = (replyToken) => {
         if(err){
           reject(err)
         }
-        if(results!=null){
+        if(results.length > 0){
           let summaryString = ""
           for(let [index,order] of results.entries()){
             const orderName = order.orderName
             const name = order.name
             const counter = (index+1) +") "
-            summaryString = summaryString + counter + orderName + "-> [" + name + "]\n"
+            summaryString = summaryString + counter + orderName + " -> [" + name + "]\n"
+          }
+          if(summaryString.length>0){
+            summaryString = summaryString.substring(0,summaryString.length-1)
           }
           await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj(summaryString)]},HEADER).catch(err=>console.log(err))
+          resolve(results)
+        }else{
+          await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]},HEADER).catch(err=>console.log(err))
           resolve(results)
         }
       })
