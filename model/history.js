@@ -1,11 +1,11 @@
 
 import mongoose , {Schema} from 'mongoose'
-
+import Order from './order'
 
 const Historys = Schema({
-  order : Schema.Types.ObjectId,
-  datetime: Number,
-  orderer: String
+  orderer: String,
+  datetime: Date,
+  orderers: [{Order}]
 })
 
 export default mongoose.model("History",Historys)
