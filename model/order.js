@@ -9,4 +9,4 @@ const Order = Schema({
   name:String,
 })
 
-export default mongoose.model("Order",Order)
+export default mongoose.model("Order_Each",Order)

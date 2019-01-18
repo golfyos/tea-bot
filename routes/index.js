@@ -14,6 +14,8 @@ import adminController from './admin'
 const CALL_GET_ALL_MEMBER = groupId => `https://api.line.me/v2/bot/group/${groupId}/members/ids`
 const TYPE_MESSAGE = "message"
 const MESSAGE_START_ORDER = "start order"
+const MESSAGE_START_ORDER_FOOD = "start order ร้านลุงไหว"
+const MESSAGE_START_ORDER_SEVEN = "start order 7-11"
 const MESSAGE_END_ORDER = "end order"
 const CALL_REPLY_MESSAGE = "https://api.line.me/v2/bot/message/reply"
 const CALL_GROUP_MEMBER_GET_PROFILE = (groupId,userId)=> `https://api.line.me/v2/bot/group/${groupId}/member/${userId}`
@@ -26,6 +28,7 @@ const HEADER = {
     "Authorization" : "Bearer " + config.channelAccessToken
   }
 }
+const USED_GROUP = config.testGroup
 const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\"\nExample: \nสั่ง-ชานมไข่มุก หวาน900%-ไก่"
 const COMMAND_WORDS = [MESSAGE_START_ORDER,MESSAGE_END_ORDER]
 const ADMIN_GOLF_ID = "Ud4176bdaea15ecbd5ef5841d2484f815"
@@ -33,9 +36,11 @@ const ADMIN_PJOM_ID = "U0695ecbf766079f40dc52f5ce62ec8a1"
 const ADMIN_PYO_ID = "Ubb429e18e52f145b20fe70f0227062ea";
 /* golf p'jom jah pyo */
 const ADMIN_IDs = ["Ud4176bdaea15ecbd5ef5841d2484f815","U0695ecbf766079f40dc52f5ce62ec8a1","Ub2080c10bf84a1ef1915e74ef251e14e","Ubb429e18e52f145b20fe70f0227062ea"]
-const MESSAGE_GREETING_START_ORDER = "=================\n====เริ่มสั่งชาไข่มุกได้====\n================="
+const MESSAGE_GREETING_START_ORDER = "=================\n====เริ่มสั่งได้====\n================="
 const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
 const MESSAGE_ORDER_WORD = "สั่ง"
+const MESSAGE_EDIT_ORDER = "แก้"
+const MESSAGE_DELETE_ORDER = "ลบ"
 const MESSAGE_SUMMARY = "สรุป"
 const MESSAGE_PAY_IMAGE = "pay-yo"
 const JOM_PROMPT_PAY_IMAGE = "https://promptpay.io/0886253600/"
@@ -84,7 +89,7 @@ router.get('/send/message',(req,res)=>{
   const sendUrl = "https://api.line.me/v2/bot/message/push"
   const messageObj = makeTextMessageObj("test message")
   const data = {
-    "to" : config.testGroup,
+    "to" : USED_GROUP,
     "messages" : [messageObj]
   }
 
@@ -107,7 +112,7 @@ router.get('/send/message',(req,res)=>{
 
 
 router.get('/get/profile',(req,res)=>{
-  axios.get(CALL_GROUP_MEMBER_GET_PROFILE(config.testGroup,ADMIN_GOLF_ID),HEADER)
+  axios.get(CALL_GROUP_MEMBER_GET_PROFILE(USED_GROUP,ADMIN_GOLF_ID),HEADER)
     .then(results=>{
       console.log(results.data)
     })
@@ -128,13 +133,22 @@ router.post("/webhook/callback",async (req,res,next)=>{
   /* Check is start or end order */
   let isCanOrder = localStorage.getItem('isCanOrder') == "true"
   if(type==TYPE_MESSAGE && message.type==TYPE_MESSAGE_TEXT){
+    
     let msgInput = message.text.toLowerCase()
-    if(msgInput==MESSAGE_START_ORDER && ADMIN_IDs.includes(userId)){
+    if(msgInput.substring(0,msgInput.lastIndexOf("order")+"order".length)==MESSAGE_START_ORDER && ADMIN_IDs.includes(userId)){
+      
       if(!isCanOrder){
         // timestamp
         localStorage.setItem('isCanOrder',true)
-
-        
+        let orderRestaurant = ""
+        if(msgInput == MESSAGE_START_ORDER_FOOD){
+          orderRestaurant = "ร้านลุงไหว"
+        }else if(msgInput == MESSAGE_START_ORDER_SEVEN){
+          orderRestaurant = "เซเว่น"
+        }else{
+          orderRestaurant = msg.substring("start order".length+1)
+        }
+        localStorage.setItem('order',orderRestaurant)
         /* response format to order */
         // makeStickerMessageObj(517,2),
         const messageObj = [
@@ -147,17 +161,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
           "messages" : messageObj
         }
         axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
-      
-
-        const order = new Order({
-          datetime : Date.now()
-        })
-        order.save()
-          .then(result=>{
-            console.log(result)
-            localStorage.setItem("id",result._id)
-          })
-          .catch(err=>console.log("Cannot Save"))
+        // localStorage.setItem("id",result._id)
       }
       responseData(res)
       return ;
@@ -170,14 +174,15 @@ router.post("/webhook/callback",async (req,res,next)=>{
       if(isCanOrder){
         /* reply order is ended message and show summary */
         localStorage.setItem('isCanOrder',false)
-        const _id_ = localStorage.getItem('id')
-        const resultData = await showSummary(_id_,replyToken)
-        const orders = resultData.orders
-
+        const orderRestaurant = localStorage.getItem("order")
+        localStorage.removeItem("order")
+        const resultData = await showSummary(replyToken)
+        
         const recordData = new History({
-          order: _id_,
-          datetime: resultData.datetime,
-          orderer: userId
+          order: orderRestaurant,
+          timestamp: new Date(),
+          orderer: userId,
+          orders:resultData
         })
         await recordData.save().catch(err=>console.log(err))
         
@@ -187,7 +192,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
               result.orders.push(order.order_info.orderName)
               await result.save().catch(err=>console.log(err))
             }else{
-              const userProfile = await axios.get(CALL_GROUP_MEMBER_GET_PROFILE(config.milkTeaGroup,order.userId),HEADER)
+              const userProfile = await axios.get(CALL_GROUP_MEMBER_GET_PROFILE(USED_GROUP,order.userId),HEADER)
               const displayNameData = userProfile.data.displayName
               
               const newUser = new User({
@@ -203,11 +208,10 @@ router.post("/webhook/callback",async (req,res,next)=>{
         }
 
         const responseBody = {
-          to : config.milkTeaGroup,
+          to : USED_GROUP,
           messages : [makeTextMessageObj(MESSAGE_GREETING_END_ORDER)]
         }
         await axios.post(CALL_SEND_MESSAGE,responseBody,HEADER).catch(err=>console.log(err))
-        localStorage.removeItem('id')
       }
       responseData(res)
       return ;
@@ -219,8 +223,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
      */
     else if(msgInput == MESSAGE_SUMMARY && ADMIN_IDs.includes(userId)){
       /* Get Current Order */
-      const _id_ = localStorage.getItem('id')
-      showSummary(_id_,replyToken)
+      showSummary(replyToken)
     }
 
     else if(msgInput.includes("pay-") && ADMIN_IDs.includes(userId)){
@@ -263,43 +266,73 @@ router.post("/webhook/callback",async (req,res,next)=>{
       if(isCanOrder){
         // keep order to database
         // response each order
-        console.log("Ordered")
-
-        const messageObj = [
-          makeTextMessageObj("Recorded")
-        ]
-
+        
+        const messageObj = []
+        
         let action = message.text.split("-")
-
+        
         if(action.length == 3){
           let [command,order,name] = action
           order = order.trim()
           name = name.trim()
-          // console.log(name)
-          if(command.trim() == MESSAGE_ORDER_WORD){
-            const recordId = localStorage.getItem("id")
-            if(recordId != null){
-              Order.findByIdAndUpdate(recordId,{
-                $push: {
-                  orders: {
-                    userId : userId,
-                    order_info:{
-                      orderName: order,
-                      timestamp:timestamp
-                    },
-                    name: name
-                  }
-                }
-              },(err,results)=>{
-                console.log("Added : " ,results)
-              })
+          command = command.trim()
+          if(command == MESSAGE_ORDER_WORD){
+            console.log("Ordered")
+            
+            const orderSchema = new Order({
+              userId,
+              timestamp,
+              orderName:order,
+              name
+            })
 
+            orderSchema.save().catch(err=>console.log(err))
+
+            messageObj.push(makeTextMessageObj("Recorded"))
+            const bodyData = {
+              "replyToken" : replyToken,
+              "messages" : messageObj
+            }
+            await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
+            
+          }
+          /**
+           * Edit Order
+           */
+          else if(command == MESSAGE_EDIT_ORDER){
+            // TODO Code
+            const chooseOrder = order.split(":")
+            const oldOrder = chooseOrder[0]
+            const newOrder = chooseOrder[1]
+            Order.findOneAndUpdate({orderName:oldOrder,userId:userId},{
+              $set:{
+                orderName:newOrder
+              }
+            },async (err,result)=>{
+              console.log("Edited: ",result)
+              messageObj.push(makeTextMessageObj("Edited: "+oldOrder + " --> " + newOrder))
               const bodyData = {
                 "replyToken" : replyToken,
                 "messages" : messageObj
               }
               await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
-            }
+            })
+
+          }
+
+          else if(command == MESSAGE_DELETE_ORDER){
+            Order.findOneAndRemove({userId:userId,orderName:order},async (err,result)=>{
+              if(err){
+                console.log(err)
+              }
+              console.log("Deleted: ",result)
+              messageObj.push(makeTextMessageObj("Deleted: "+ order))
+              const bodyData = {
+                "replyToken" : replyToken,
+                "messages" : messageObj
+              }
+              await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
+            })
           }
 
        }
@@ -327,24 +360,23 @@ router.post("/webhook/callback",async (req,res,next)=>{
  * @return Promise<any>
  * @description Show order summary from id of day's order and reply line group by replyToken
  */
-const showSummary = (_id_,replyToken) => {
+const showSummary = (replyToken) => {
   return new Promise((resolve,reject)=>{
-    if(_id_ != null){
-      Order.findById(_id_,async (err,results)=>{
-        if(err) reject(err)
-        if(results != null){
+    if(replyToken != undefined){
+      Order.find({},async (err,results)=>{
+        console.log("results all: ",results)
+        if(err){
+          reject(err)
+        }
+        if(results!=null){
           let summaryString = ""
-          const orders = results.orders
-          
-          for(let [index,order] of orders.entries()){
-            const orderName = order.order_info.orderName
-            let counter = (index+1) + ") "
-            summaryString = summaryString + counter + orderName + " -> " + order.name + "\n"
+          for(let [index,order] of results.entries()){
+            const orderName = order.orderName
+            const name = order.name
+            const counter = (index+1) +") "
+            summaryString = summaryString + counter + orderName + "-> [" + name + "]\n"
           }
-          
-          await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj(summaryString)]},HEADER)
-          // console.log(results)
-          // return results
+          await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj(summaryString)]},HEADER).catch(err=>console.log(err))
           resolve(results)
         }
       })
