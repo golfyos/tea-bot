@@ -1,6 +1,4 @@
-
 import mongoose , {Schema} from 'mongoose'
-import Order from './order'
 
 const Historys = Schema({
   order: String,
