@@ -4,6 +4,7 @@ import axios from 'axios'
 import {makeTextMessageObj} from '../util/data_util.js'
 import config from '../config/config'
 import querystring from 'querystring'
+import Order from '../model/order'
 
 const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
 
@@ -58,9 +59,18 @@ router.post("/send/message",async (req,res,next)=>{
   const responseLine = await axios.post(CALL_SEND_MESSAGE,data,header).catch(err=>console.log(err))
 
   res.status(200)
-  res.json({success:true})
+  res.json({success:true})  
+})
 
-  
+router.get("/listorder",async(req,res)=>{
+  Order.find({})
+    .exec()
+    .then((result)=>{
+      console.log(result)
+      res.status(200)
+      res.send({orders:result})
+    })
+    .catch(err=>console.log(err))
 })
 
 

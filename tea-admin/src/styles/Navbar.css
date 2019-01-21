@@ -1,8 +1,48 @@
 .navbar{
-  height:100px;
+  height:80px;
+  width: 100%;
   background-color: aqua;
 
   position: fixed;
   top:0;
   left:0;
+  z-index:100;
+}
+
+.navbar-list{
+  list-style-type: none;
+  height: 80px;
+  text-align: center;
+  display:inline-flex;
+  justify-content: left;
+  align-items: center;
+  margin:0;
+  padding: 0;
+  width:50%;
+}
+
+.navbar-list li{
+  display:inline-flex;
+  margin-right: 30px;
+  margin-left: 30px;
+}
+
+.nav-link{
+  text-decoration: none;
+}
+
+.navbar-authen{
+  list-style-type: none;
+  display:inline-flex;
+  height:80px;
+  width:40%;
+  margin:0;
+  padding:0;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.navbar-authen li{
+  display:inline-flex;
+  margin-right:50px;
 }

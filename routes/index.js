@@ -28,12 +28,13 @@ const HEADER = {
     "Authorization" : "Bearer " + config.channelAccessToken
   }
 }
-const USED_GROUP = config.testGroup
+const USED_GROUP = config.milkTeaGroup
 const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\"\nExample: \nสั่ง-ชานมไข่มุก หวาน900%-ไก่\n"
 const LINESPACE = "======================\n"
 const EDIT_FORMAT = "How To Edit: \n\"แก้ - <old order> : <new order> - <name>\"\nExample: \nแก้-กระเพาหมูสับ:ข้าวผัดต้มยำไก่-ไก่\n"
 
 const DELETE_FORMAT = "How To Delete: \n\"ลบ - <Your order> - <name>\"\n"
+
 const COMMAND_WORDS = [MESSAGE_START_ORDER,MESSAGE_END_ORDER]
 const ADMIN_GOLF_ID = "Ud4176bdaea15ecbd5ef5841d2484f815"
 const ADMIN_PJOM_ID = "U0695ecbf766079f40dc52f5ce62ec8a1"
@@ -50,6 +51,9 @@ const MESSAGE_SUMMARY = "สรุป"
 const MESSAGE_PAY_IMAGE = "pay-yo"
 const JOM_PROMPT_PAY_IMAGE = "https://promptpay.io/0886253600/"
 const PYO_PROMPT_PAY = "https://promptpay.io/1102001023038"
+
+
+const HOWTO_MESSAGE = BOT_STATUS_VERSION+LINESPACE+ORDERED_FORMAT+LINESPACE+EDIT_FORMAT+LINESPACE+DELETE_FORMAT+LINESPACE
 
 const getAccessToken = async () =>{
   let config = {
@@ -76,6 +80,8 @@ const getAccessToken = async () =>{
 }
 
 /* GET index page. */
+
+
 router.get('/', (req, res) => {
   res.render('index', {
     title: 'Express'
@@ -159,7 +165,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
         const messageObj = [
           makeStickerMessageObj(519,2),
           makeTextMessageObj(MESSAGE_GREETING_START_ORDER),
-          makeTextMessageObj(BOT_STATUS_VERSION+LINESPACE+ORDERED_FORMAT+LINESPACE+EDIT_FORMAT+LINESPACE+DELETE_FORMAT+LINESPACE),
+          makeTextMessageObj(HOWTO_MESSAGE),
         ]
         const bodyData = {
           "replyToken" : replyToken,
@@ -182,7 +188,8 @@ router.post("/webhook/callback",async (req,res,next)=>{
         const orderRestaurant = localStorage.getItem("order")
         localStorage.removeItem("order")
         const resultData = await showSummary(replyToken)
-        
+        const resultProduction = await showSummaryProduction(replyToken)
+
         const recordData = new History({
           order: orderRestaurant,
           timestamp: new Date(),
@@ -215,7 +222,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
           })
         }
 
-        await Order.remove({}).catch(err=>console.log(err))
+        await Order.deleteMany({}).catch(err=>console.log(err))
 
         const responseBody = {
           to : USED_GROUP,
@@ -325,7 +332,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
               }
             }else{
 
-              await Order.findOne({orderName:oldOrder,userId:userId},async (err,oldOrderResult)=>{
+              await Order.findOne({orderName:oldOrder,userId:userId,name:name},async (err,oldOrderResult)=>{
                 if(oldOrderResult == undefined){
                   messageObj.push(makeTextMessageObj("Warning:ไม่สามารถแก้ไขแทนกันได้น้ะจ้ะ\nYour Old order Not Found!\nโปรดระบุอออเดอร์เก่าให้ถูกต้อง"))
                   bodyData = {
@@ -348,10 +355,10 @@ router.post("/webhook/callback",async (req,res,next)=>{
 
           else if(command == MESSAGE_DELETE_ORDER){
 
-            await Order.findOne({userId:userId,orderName:order},async(err,result)=>{
+            await Order.findOne({userId:userId,orderName:order,name:name},async(err,result)=>{
               if(result!=null){
                 console.log("Deleted: ",result)
-                Order.remove({userId:userId,orderName:order},async(err,result2)=>{
+                Order.deleteOne({userId:userId,orderName:order,name:name},async(err,result2)=>{
                   if(err){
                     console.log(err)
                   }
@@ -379,12 +386,19 @@ router.post("/webhook/callback",async (req,res,next)=>{
        else{
          
        }
+
+      if(msgInput=="?help"){
+        const bodyDataHowTo = {
+          "replyToken" : replyToken,
+          "messages" : [makeTextMessageObj(HOWTO_MESSAGE)]
+        }
+        await axios.post(CALL_REPLY_MESSAGE,bodyDataHowTo,HEADER).catch(err=>console.log(err))
+      }
         
       }else{
-        console.log("You cannot order right now ! FUCK.")
+
       }
       // console.log(req.body.events)
-
     }
   }
   
@@ -394,7 +408,6 @@ router.post("/webhook/callback",async (req,res,next)=>{
 
 /**
  * 
- * @param {*} _id_ 
  * @param {*} replyToken 
  * @return Promise<any>
  * @description Show order summary from id of day's order and reply line group by replyToken
@@ -429,6 +442,40 @@ const showSummary = (replyToken) => {
   })  
 }
 
+/**
+ * 
+ * @param {*} replyToken 
+ * @return Promise<any>
+ * @description Show order summary of that day without name
+ */
+const showSummaryProduction = (replyToken)=>{
+  return new Promise((resolve,reject)=>{
+    if(replyToken != undefined){
+      Order.find({},async (err,results)=>{
+        console.log("results all: ",results)
+        if(err){
+          reject(err)
+        }
+        if(results.length > 0){
+          let summaryString = ""
+          for(let [index,order] of results.entries()){
+            const orderName = order.orderName
+            const counter = (index+1) +") "
+            summaryString = summaryString + counter + orderName + "\n"
+          }
+          if(summaryString.length>0){
+            summaryString = summaryString.substring(0,summaryString.length-1)
+          }
+          await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj(summaryString)]},HEADER).catch(err=>console.log(err))
+          resolve(results)
+        }else{
+          await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]},HEADER).catch(err=>console.log(err))
+          resolve(results)
+        }
+      })
+    }
+  })  
+}
 
 
 router.all("*",(req,res,next)=>{

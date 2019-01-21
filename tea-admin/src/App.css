@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  transition: all 0.6s ease;
 }
 
 .App-logo {
