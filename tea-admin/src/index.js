@@ -5,8 +5,12 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 
 import {BrowserRouter} from 'react-router-dom'
+import {Provider} from 'react-redux'
+import Store from "./store"
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-const APP = (<BrowserRouter><App/></BrowserRouter>)
+const APP = (<Provider store={Store}><BrowserRouter><App/></BrowserRouter></Provider>)
+document.title = "LINE BOT MANAGER"
 
 ReactDOM.render(APP, document.getElementById('root'));
 

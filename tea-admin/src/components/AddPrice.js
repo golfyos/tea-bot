@@ -25,9 +25,9 @@ class AddPrice extends Component {
     return(
       <Fragment>
         <div>
-          <ul>
+          <ol>
             {list}
-          </ul>
+          </ol>
         </div>
       </Fragment>
     )

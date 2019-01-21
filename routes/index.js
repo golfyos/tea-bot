@@ -188,7 +188,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
         const orderRestaurant = localStorage.getItem("order")
         localStorage.removeItem("order")
         const resultData = await showSummary(replyToken)
-        const resultProduction = await showSummaryProduction(replyToken)
+        const resultProduction = await showSummaryProduction(config.milkTeaGroup)
 
         const recordData = new History({
           order: orderRestaurant,
@@ -387,13 +387,13 @@ router.post("/webhook/callback",async (req,res,next)=>{
          
        }
 
-      if(msgInput=="?help"){
-        const bodyDataHowTo = {
-          "replyToken" : replyToken,
-          "messages" : [makeTextMessageObj(HOWTO_MESSAGE)]
+        if(msgInput=="?help"){
+          const bodyDataHowTo = {
+            "replyToken" : replyToken,
+            "messages" : [makeTextMessageObj(HOWTO_MESSAGE)]
+          }
+          await axios.post(CALL_REPLY_MESSAGE,bodyDataHowTo,HEADER).catch(err=>console.log(err))
         }
-        await axios.post(CALL_REPLY_MESSAGE,bodyDataHowTo,HEADER).catch(err=>console.log(err))
-      }
         
       }else{
 
@@ -448,9 +448,9 @@ const showSummary = (replyToken) => {
  * @return Promise<any>
  * @description Show order summary of that day without name
  */
-const showSummaryProduction = (replyToken)=>{
+const showSummaryProduction = (to)=>{
   return new Promise((resolve,reject)=>{
-    if(replyToken != undefined){
+    if(to != undefined){
       Order.find({},async (err,results)=>{
         console.log("results all: ",results)
         if(err){
@@ -466,10 +466,10 @@ const showSummaryProduction = (replyToken)=>{
           if(summaryString.length>0){
             summaryString = summaryString.substring(0,summaryString.length-1)
           }
-          await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj(summaryString)]},HEADER).catch(err=>console.log(err))
+          await axios.post(CALL_REPLY_MESSAGE,{to:to,messages:[makeTextMessageObj(summaryString)]},HEADER).catch(err=>console.log(err))
           resolve(results)
         }else{
-          await axios.post(CALL_REPLY_MESSAGE,{replyToken:replyToken,messages:[makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]},HEADER).catch(err=>console.log(err))
+          await axios.post(CALL_REPLY_MESSAGE,{to:to,messages:[makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]},HEADER).catch(err=>console.log(err))
           resolve(results)
         }
       })

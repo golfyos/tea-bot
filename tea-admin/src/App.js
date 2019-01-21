@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import Navbar from './components/Navbar'
 import SendMsg from './components/SendMsg'
 import ListOrder from './components/ListOrder'
 import AddPriceScreen from './components/AddPrice'
+import CommandScreen from './components/Command'
 
 import {Route} from 'react-router-dom'
 
@@ -18,6 +18,7 @@ class App extends Component {
           <Route exact path="/" component={SendMsg} />
           <Route exact path="/list_order" component={ListOrder}/>
           <Route exact path="/addprice" component={AddPriceScreen}/>
+          <Route exact path="/command" component={CommandScreen}/>
         </header>
       </div>
     );
