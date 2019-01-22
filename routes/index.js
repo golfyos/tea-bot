@@ -1,6 +1,6 @@
 import express from 'express';
 import axios from 'axios'
-import config from '../config/config'
+import {milkTeaGroup,testGroup,channelAccessToken} from '../config/config'
 const router = express.Router();
 import localStorage from 'localStorage'
 
@@ -25,10 +25,10 @@ const TYPE_MESSAGE_TEXT = "text"
 const HEADER = {
   headers : {
     "Content-Type" : "application/json",
-    "Authorization" : "Bearer " + config.channelAccessToken
+    "Authorization" : "Bearer " + channelAccessToken
   }
 }
-const USED_GROUP = config.milkTeaGroup
+const USED_GROUP = milkTeaGroup
 const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\"\nExample: \nสั่ง-ชานมไข่มุก หวาน900%-ไก่\n"
 const LINESPACE = "======================\n"
 const EDIT_FORMAT = "How To Edit: \n\"แก้ - <old order> : <new order> - <name>\"\nExample: \nแก้-กระเพาหมูสับ:ข้าวผัดต้มยำไก่-ไก่\n"
@@ -53,7 +53,7 @@ const JOM_PROMPT_PAY_IMAGE = "https://promptpay.io/0886253600/"
 const PYO_PROMPT_PAY = "https://promptpay.io/1102001023038"
 
 
-const HOWTO_MESSAGE = BOT_STATUS_VERSION+LINESPACE+ORDERED_FORMAT+LINESPACE+EDIT_FORMAT+LINESPACE+DELETE_FORMAT+LINESPACE
+export const HOWTO_MESSAGE = BOT_STATUS_VERSION+LINESPACE+ORDERED_FORMAT+LINESPACE+EDIT_FORMAT+LINESPACE+DELETE_FORMAT+LINESPACE
 
 const getAccessToken = async () =>{
   let config = {
@@ -107,7 +107,7 @@ router.get('/send/message',(req,res)=>{
   const header = {
     headers : {
       "Content-Type" : "application/json",
-      "Authorization" : "Bearer " + config.channelAccessToken
+      "Authorization" : "Bearer " + channelAccessToken
     }
   }
   axios.post(sendUrl,data,header)
@@ -188,7 +188,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
         const orderRestaurant = localStorage.getItem("order")
         localStorage.removeItem("order")
         const resultData = await showSummary(replyToken)
-        const resultProduction = await showSummaryProduction(config.milkTeaGroup)
+        const resultProduction = await showSummaryProduction(USED_GROUP)
 
         const recordData = new History({
           order: orderRestaurant,
@@ -259,7 +259,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
             "previewImageUrl" : PYO_PROMPT_PAY
           }
           bodyData = {
-            to : config.milkTeaGroup,
+            to : USED_GROUP,
             messages: [imgData]
           }
         }else if(cost[1]=="jom"){
@@ -269,7 +269,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
             "previewImageUrl" : JOM_PROMPT_PAY_IMAGE
           }
           bodyData = {
-            to : config.milkTeaGroup,
+            to : USED_GROUP,
             messages: [imgData]
           }
         }
@@ -319,8 +319,8 @@ router.post("/webhook/callback",async (req,res,next)=>{
           else if(command == MESSAGE_EDIT_ORDER){
             // TODO Code
             const chooseOrder = order.split(":")
-            const oldOrder = chooseOrder[0]
-            const newOrder = chooseOrder[1]
+            const oldOrder = chooseOrder[0].trim()
+            const newOrder = chooseOrder[1].trim()
 
             let bodyData = {}
             console.log(newOrder)
@@ -466,10 +466,10 @@ const showSummaryProduction = (to)=>{
           if(summaryString.length>0){
             summaryString = summaryString.substring(0,summaryString.length-1)
           }
-          await axios.post(CALL_REPLY_MESSAGE,{to:to,messages:[makeTextMessageObj(summaryString)]},HEADER).catch(err=>console.log(err))
+          await axios.post(CALL_SEND_MESSAGE,{to:to,messages:[makeTextMessageObj(summaryString)]},HEADER).catch(err=>console.log(err))
           resolve(results)
         }else{
-          await axios.post(CALL_REPLY_MESSAGE,{to:to,messages:[makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]},HEADER).catch(err=>console.log(err))
+          await axios.post(CALL_SEND_MESSAGE,{to:to,messages:[makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]},HEADER).catch(err=>console.log(err))
           resolve(results)
         }
       })

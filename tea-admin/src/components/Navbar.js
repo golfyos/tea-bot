@@ -22,8 +22,9 @@ import {
   InputGroupText
 } from "reactstrap";
 
-
-import {MdPermIdentity, MdLock} from 'react-icons/md'
+import { MdPermIdentity, MdLock } from "react-icons/md";
+import { connect } from "react-redux";
+import { authen } from "../actions/authen";
 import "../styles/Navbar.css";
 
 class NavbarComponent extends Component {
@@ -70,25 +71,19 @@ class NavbarComponent extends Component {
           <Collapse isOpen={this.state.isOpen} navbar>
             <Nav>
               <NavItem>
-                <NavLink>
-                  <Link className="nav-link" to="/list_order">
-                    LIST
-                  </Link>
-                </NavLink>
+                <Link className="nav-link" to="/list_order">
+                  LIST
+                </Link>
               </NavItem>
               <NavItem>
-                <NavLink>
-                  <Link className="nav-link" to="/addprice">
-                    ADD PRICE
-                  </Link>
-                </NavLink>
+                <Link className="nav-link" to="/addprice">
+                  ADD PRICE
+                </Link>
               </NavItem>
               <NavItem>
-                <NavLink>
-                  <Link className="nav-link" to="/command">
-                    COMMAND
-                  </Link>
-                </NavLink>
+                <Link className="nav-link" to="/command">
+                  COMMAND
+                </Link>
               </NavItem>
             </Nav>
           </Collapse>
@@ -128,7 +123,9 @@ class NavbarComponent extends Component {
             <ModalBody>
               <InputGroup>
                 <InputGroupAddon addonType="prepend">
-                  <InputGroupText><MdPermIdentity/></InputGroupText>
+                  <InputGroupText>
+                    <MdPermIdentity />
+                  </InputGroupText>
                 </InputGroupAddon>
                 <Input
                   valid={this.state.user_info.isValid}
@@ -141,7 +138,9 @@ class NavbarComponent extends Component {
 
               <InputGroup>
                 <InputGroupAddon addonType="prepend">
-                  <InputGroupText><MdLock/></InputGroupText>
+                  <InputGroupText>
+                    <MdLock />
+                  </InputGroupText>
                 </InputGroupAddon>
                 <Input
                   valid={this.state.user_info.isValid}
@@ -164,4 +163,21 @@ class NavbarComponent extends Component {
   }
 }
 
-export default NavbarComponent;
+const mapStateToProps = state => {
+  return {
+    isLogin: state.auth.isLogin
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onSubmitLogin: data => {
+      dispatch(authen(data));
+    }
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(NavbarComponent);

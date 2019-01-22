@@ -5,8 +5,12 @@ import {makeTextMessageObj} from '../util/data_util.js'
 import config from '../config/config'
 import querystring from 'querystring'
 import Order from '../model/order'
-
+import {milkTeaGroup,testGroup} from '../config/config'
+import {HOWTO_MESSAGE} from './index'
+const USED_GROUP = milkTeaGroup
 const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
+const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
+
 
 const getAccessToken = async () =>{
   let config = {
@@ -32,6 +36,53 @@ const getAccessToken = async () =>{
   return token.data.access_token
 }
 
+
+/**
+ * 
+ * @param {*} to 
+ * @return Promise<any>
+ * @description Show order summary from id of day's order and reply line group by replyToken
+ */
+const showSummary = (to) => {
+  return new Promise(async(resolve,reject)=>{
+    if(to != undefined){
+      
+      const results = await Order.find({}).exec().catch(err=>reject(err))
+      let msg = ""
+      if(results.length > 0){
+        let summaryString = ""
+        for(let [index,order] of results.entries()){
+          const orderName = order.orderName
+          const name = order.name
+          const counter = (index+1) +") "
+          summaryString = summaryString + counter + orderName + " -> [" + name + "]\n"
+        }
+        if(summaryString.length>0){
+          summaryString = summaryString.substring(0,summaryString.length-1)
+        }
+        msg = [makeTextMessageObj(summaryString)]
+      }else{
+        msg = [makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]
+      }
+      let bodyData = {
+        "to" : to,
+        "messages" : msg
+      }
+
+      const token = await getAccessToken()
+      const HEADER = {
+        headers : {
+          "Content-Type" : "application/json",
+          "Authorization" : "Bearer " + token
+        }
+      }
+      await axios.post(CALL_SEND_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
+      resolve(results)
+    }
+  })  
+}
+
+
 router.post("/",(req,res)=>{
   console.log(req.body)
   res.status(200)
@@ -39,14 +90,14 @@ router.post("/",(req,res)=>{
 })
 
 
-const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
+
 router.post("/send/message",async (req,res,next)=>{
   const token = await getAccessToken()
   const reqMessage = req.body.message
   const messages = [makeTextMessageObj(reqMessage)]
 
   const data = {
-    "to" : config.milkTeaGroup,
+    "to" : milkTeaGroup,
     "messages" : messages
   }
 
@@ -73,8 +124,28 @@ router.get("/listorder",async(req,res)=>{
     .catch(err=>console.log(err))
 })
 
+router.get("/summary",async(req,res)=>{
+  const sum = await showSummary(USED_GROUP)
+  res.send({success:true,data:sum})
+})
 
 
+router.get("/howto",async(req,res)=>{
+  let bodyData = {
+    "to" : to,
+    "messages" : [makeTextMessageObj(HOWTO_MESSAGE)]
+  }
+
+  const token = await getAccessToken()
+  const HEADER = {
+    headers : {
+      "Content-Type" : "application/json",
+      "Authorization" : "Bearer " + token
+    }
+  }
+  await axios.post(CALL_SEND_MESSAGE,bodyData,HEADER)
+  res.send({success:true,msg:HOWTO_MESSAGE})
+})
 
 
 
