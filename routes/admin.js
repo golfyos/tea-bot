@@ -97,7 +97,7 @@ router.post("/send/message",async (req,res,next)=>{
   const messages = [makeTextMessageObj(reqMessage)]
 
   const data = {
-    "to" : milkTeaGroup,
+    "to" : USED_GROUP,
     "messages" : messages
   }
 
@@ -132,7 +132,7 @@ router.get("/summary",async(req,res)=>{
 
 router.get("/howto",async(req,res)=>{
   let bodyData = {
-    "to" : to,
+    "to" : USED_GROUP,
     "messages" : [makeTextMessageObj(HOWTO_MESSAGE)]
   }
 

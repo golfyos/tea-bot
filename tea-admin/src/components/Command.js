@@ -42,7 +42,7 @@ class CommandScreen extends Component {
           </Button>
         </div>
         <div>
-          <Button disabled={this.state.isDisabled} style={styles.buttonStyles} color="success">
+          <Button disabled={true} style={styles.buttonStyles} color="success">
             START ORDER
           </Button>
         </div>
@@ -52,7 +52,7 @@ class CommandScreen extends Component {
           </Button>
         </div>
         <div>
-          <Button disabled={this.state.isDisabled} style={styles.buttonStyles} color="warning">
+          <Button disabled={true} style={styles.buttonStyles} color="warning">
             END ORDER
           </Button>
         </div>

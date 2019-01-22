@@ -20,14 +20,13 @@ class SendMsg extends Component {
     const configHeader = {
       headers : {
         "Content-Type" : "application/json",
-        "Access-Control-Request-Method": "POST"
       }
     }
+    this.setState({msg:""})
     const response = await axios.post(CALL_SEND_LINE,requestBody,configHeader).catch(err=>console.log("error: ",err))
     console.log(response)
-    this.setState({msg:""})
   }
-
+  
   _onChangeMessage = (input)=>{
     this.setState({msg:input.target.value})
   }

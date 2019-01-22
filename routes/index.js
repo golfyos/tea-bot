@@ -43,7 +43,7 @@ const ADMIN_PYO_ID = "Ubb429e18e52f145b20fe70f0227062ea";
 const ADMIN_IDs = ["Ud4176bdaea15ecbd5ef5841d2484f815","U0695ecbf766079f40dc52f5ce62ec8a1","Ub2080c10bf84a1ef1915e74ef251e14e","Ubb429e18e52f145b20fe70f0227062ea"]
 const MESSAGE_GREETING_START_ORDER = "=================\n=======เริ่มสั่งได้=======\n================="
 const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
-const BOT_STATUS_VERSION = "Bot Version: 2.0.0\n"
+const BOT_STATUS_VERSION = "Bot Version: 2.0.8\n"
 const MESSAGE_ORDER_WORD = "สั่ง"
 const MESSAGE_EDIT_ORDER = "แก้"
 const MESSAGE_DELETE_ORDER = "ลบ"
