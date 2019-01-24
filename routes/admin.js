@@ -147,6 +147,13 @@ router.get("/howto",async(req,res)=>{
   res.send({success:true,msg:HOWTO_MESSAGE})
 })
 
+router.post("/start/order",(req,res)=>{
+
+})
+
+router.post("/end/order",(req,res)=>{
+  
+})
 
 
 export default router
