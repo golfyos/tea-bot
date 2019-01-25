@@ -34,7 +34,7 @@ class SendMsg extends Component {
     return(
       <div className="sendmsg">
         <InputGroup>
-          <Input onChange={this._onChangeMessage} value={this.state.msg} type="text" placeholder="Enter your text..."/>
+          <Input onChange={this._onChangeMessage} value={this.state.msg} type="textarea" placeholder="Enter your text..."/>
           <InputGroupAddon addonType="append"><Button color="success" onClick={this._sendMessage}>Send Message</Button></InputGroupAddon>
         </InputGroup>        
       </div>
