@@ -477,6 +477,9 @@ const showSummaryProduction = (to)=>{
   })  
 }
 
+const generatePDF = (data) => {
+
+}
 
 router.all("*",(req,res,next)=>{
   res.setTimeout(1)
