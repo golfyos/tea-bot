@@ -4,7 +4,7 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "start": "nodemon ./bin/start",
+    "start": "nodemon ./bin/start --ignore tea-admin/",
     "test": "mocha --recursive './test/*Test.js' --compilers js:babel-core/register"
   },
   "dependencies": {

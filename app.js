@@ -27,13 +27,6 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use(cors())
-// app.use((req, res, next)=>{
-//   res.header('Access-Control-Allow-Origin', '*');
-//   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Cache-Control");
-//   res.header('Access-Control-Allow-Credentials', true);
-//   next();
-// });
 
 
 mongoose.connect(config.database,{useNewUrlParser:true})
@@ -54,8 +47,14 @@ app.use(session({
   }
 }))
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'tea-admin')));
 
 app.use('/', index);
+
+
+app.get("/*",(req,res,next)=>{
+  res.sendFile(path.resolve(__dirname,"public","index.html"))
+})
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
