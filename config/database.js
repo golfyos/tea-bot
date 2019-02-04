@@ -1,7 +1,8 @@
 
 
 const config = {
-  database : "mongodb://localhost/milktea"
+  database : "mongodb://localhost/milktea",
+  cloud:"mongodb://bot:7AfFrVsS5VMxeNb@ds033750.mlab.com:33750/milktea"
 }
 
-export default config
+export const usedDatabase = config.cloud

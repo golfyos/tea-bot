@@ -1,6 +1,6 @@
 import express from 'express';
 import axios from 'axios'
-import {milkTeaGroup,testGroup,channelAccessToken} from '../config/config'
+import {usedGroup,channelAccessToken} from '../config/config'
 const router = express.Router();
 import localStorage from 'localStorage'
 
@@ -28,7 +28,7 @@ const HEADER = {
     "Authorization" : "Bearer " + channelAccessToken
   }
 }
-const USED_GROUP = milkTeaGroup
+const USED_GROUP = usedGroup
 const ORDERED_FORMAT = "How To Order: \n\"สั่ง-<Your Order>-<Your Name>\"\nExample: \nสั่ง-ชานมไข่มุก หวาน900%-ไก่\n"
 const LINESPACE = "======================\n"
 const EDIT_FORMAT = "How To Edit: \n\"แก้ - <old order> : <new order> - <name>\"\nExample: \nแก้-กระเพาหมูสับ:ข้าวผัดต้มยำไก่-ไก่\n"

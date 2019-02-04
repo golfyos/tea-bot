@@ -11,7 +11,9 @@ import cors from 'cors'
 import index from './routes/index';
 import session from 'express-session'
 import mongoose from 'mongoose'
-import config from './config/database'
+import {usedDatabase} from './config/database'
+
+const USED_DATABASE = usedDatabase
 
 const app = express();
 const debug = Debug('tea-bot:app');
@@ -29,12 +31,12 @@ app.use(bodyParser.urlencoded({
 app.use(cors())
 
 
-mongoose.connect(config.database,{useNewUrlParser:true})
+mongoose.connect(USED_DATABASE,{useNewUrlParser:true})
 const db = mongoose.connection
 
 db.on('error',console.error.bind(console,'Connection Error: '))
 db.once('open',()=>{
-  console.log("Database Connected: ", config.database)
+  console.log("Database Connected: ", USED_DATABASE)
 })
 
 app.use(cookieParser());
