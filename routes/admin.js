@@ -5,9 +5,9 @@ import {makeTextMessageObj} from '../util/data_util.js'
 import config from '../config/config'
 import querystring from 'querystring'
 import Order from '../model/order'
-import {milkTeaGroup,testGroup} from '../config/config'
+import {usedGroup} from '../config/config'
 import {HOWTO_MESSAGE} from './index'
-const USED_GROUP = milkTeaGroup
+const USED_GROUP = usedGroup
 const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
 const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
 
