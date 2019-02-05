@@ -3,6 +3,7 @@ import axios from 'axios'
 import {usedGroup,channelAccessToken} from '../config/config'
 const router = express.Router();
 import localStorage from 'localStorage'
+import querystring from 'querystring'
 
 import {responseData,makeTextMessageObj,makeStickerMessageObj} from '../util/data_util'
 import Order from '../model/order'
@@ -22,10 +23,10 @@ const CALL_GROUP_MEMBER_GET_PROFILE = (groupId,userId)=> `https://api.line.me/v2
 const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
 const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
 const TYPE_MESSAGE_TEXT = "text"
-const HEADER = {
+let HEADER = {
   headers : {
     "Content-Type" : "application/json",
-    "Authorization" : "Bearer " + channelAccessToken
+    "Authorization" : ""
   }
 }
 const USED_GROUP = usedGroup
@@ -76,6 +77,7 @@ const getAccessToken = async () =>{
 
 
   const token = await axios.post(CALL_OAUTH_LINE,formData,config.HEADER).catch(err=>console.log(err))
+  HEADER.headers.Authorization = "Bearer " + token.data.access_token
   return token.data.access_token
 }
 
@@ -171,7 +173,8 @@ router.post("/webhook/callback",async (req,res,next)=>{
           "replyToken" : replyToken,
           "messages" : messageObj
         }
-        axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
+        await getAccessToken()
+        await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
         // localStorage.setItem("id",result._id)
       }
       responseData(res)
@@ -228,6 +231,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
           to : USED_GROUP,
           messages : [makeTextMessageObj(MESSAGE_GREETING_END_ORDER)]
         }
+        await getAccessToken()
         await axios.post(CALL_SEND_MESSAGE,responseBody,HEADER).catch(err=>console.log(err))
       }
       responseData(res)
@@ -273,7 +277,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
             messages: [imgData]
           }
         }
-
+        await getAccessToken()
         await axios.post(CALL_SEND_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
       }
     }
@@ -293,6 +297,8 @@ router.post("/webhook/callback",async (req,res,next)=>{
           order = order.trim()
           name = name.trim()
           command = command.trim()
+          await getAccessToken()
+
           if(command == MESSAGE_ORDER_WORD){
             console.log("Ordered")
             
@@ -388,6 +394,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
        }
 
         if(msgInput=="?help"){
+          await getAccessToken()
           const bodyDataHowTo = {
             "replyToken" : replyToken,
             "messages" : [makeTextMessageObj(HOWTO_MESSAGE)]
@@ -420,6 +427,7 @@ const showSummary = (replyToken) => {
         if(err){
           reject(err)
         }
+        await getAccessToken()
         if(results.length > 0){
           let summaryString = ""
           for(let [index,order] of results.entries()){

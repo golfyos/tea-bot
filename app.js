@@ -12,11 +12,12 @@ import index from './routes/index';
 import session from 'express-session'
 import mongoose from 'mongoose'
 import {usedDatabase} from './config/database'
+const functions = require("firebase-functions")
 
 const USED_DATABASE = usedDatabase
 
 const app = express();
-const debug = Debug('tea-bot:app');
+const debug = Debug('techberry-bot:app');
 app.set('views', path.join(__dirname, 'views'));
 // view engine setup
 app.set('view engine', 'pug');
@@ -83,3 +84,4 @@ process.on('uncaughtException', (err) => {
 });
 
 export default app;
+
