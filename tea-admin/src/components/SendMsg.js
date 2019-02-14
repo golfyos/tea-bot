@@ -27,14 +27,14 @@ class SendMsg extends Component {
     console.log(response)
   }
   
-  _onChangeMessage = (input)=>{
+  _onChangeMessage = (input)=>{ 
     this.setState({msg:input.target.value})
   }
   render(){
     return(
       <div className="sendmsg">
         <InputGroup>
-          <Input onChange={this._onChangeMessage} value={this.state.msg} type="textarea" placeholder="Enter your text..."/>
+          <Input className="textarea-size" onChange={this._onChangeMessage} value={this.state.msg} type="textarea" placeholder="Enter your text..."/>
           <InputGroupAddon addonType="append"><Button color="success" onClick={this._sendMessage}>Send Message</Button></InputGroupAddon>
         </InputGroup>        
       </div>

@@ -95,7 +95,7 @@ router.post("/send/message",async (req,res,next)=>{
   const token = await getAccessToken()
   const reqMessage = req.body.message
   const messages = [makeTextMessageObj(reqMessage)]
-
+ 
   const data = {
     "to" : USED_GROUP,
     "messages" : messages
