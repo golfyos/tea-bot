@@ -4,6 +4,7 @@ import {usedGroup,channelAccessToken} from '../config/config'
 const router = express.Router();
 import localStorage from 'localStorage'
 import querystring from 'querystring'
+import https from 'https'
 
 import {responseData,makeTextMessageObj,makeStickerMessageObj} from '../util/data_util'
 import Order from '../model/order'
@@ -26,7 +27,8 @@ const TYPE_MESSAGE_TEXT = "text"
 let HEADER = {
   headers : {
     "Content-Type" : "application/json",
-    "Authorization" : ""
+    "Authorization" : "",
+    "httpsAgent": new https.Agent({ keepAlive: true }),
   }
 }
 const USED_GROUP = usedGroup
@@ -56,11 +58,16 @@ const PYO_PROMPT_PAY = "https://promptpay.io/1102001023038"
 
 export const HOWTO_MESSAGE = BOT_STATUS_VERSION+LINESPACE+ORDERED_FORMAT+LINESPACE+EDIT_FORMAT+LINESPACE+DELETE_FORMAT+LINESPACE
 
+const Agent = new https.Agent({
+  rejectUnauthorized: false
+})
+const instance = axios.create({httpsAgent:Agent})
+
 const getAccessToken = async () =>{
   let config = {
     HEADER: {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
       }
     },
     body : {
@@ -76,7 +83,7 @@ const getAccessToken = async () =>{
   config.HEADER.headers["Content-Length"] = content_length
 
 
-  const token = await axios.post(CALL_OAUTH_LINE,formData,config.HEADER).catch(err=>console.log(err))
+  const token = await instance.post(CALL_OAUTH_LINE,formData,config.HEADER).catch(err=>console.log(err))
   HEADER.headers.Authorization = "Bearer " + token.data.access_token
   return token.data.access_token
 }
