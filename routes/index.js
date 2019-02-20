@@ -1,6 +1,6 @@
 import express from 'express';
 import axios from 'axios'
-import {usedGroup,channelAccessToken} from '../config/config'
+import {usedGroup,channelAccessToken,client_id,cliend_secret} from '../config/config'
 const router = express.Router();
 import localStorage from 'localStorage'
 import querystring from 'querystring'
@@ -61,7 +61,6 @@ export const HOWTO_MESSAGE = BOT_STATUS_VERSION+LINESPACE+ORDERED_FORMAT+LINESPA
 const Agent = new https.Agent({
   rejectUnauthorized: false
 })
-const instance = axios.create({httpsAgent:Agent})
 
 const getAccessToken = async () =>{
   let config = {
@@ -72,8 +71,8 @@ const getAccessToken = async () =>{
     },
     body : {
       "grant_type" : "client_credentials",
-      "client_id" : process.env.CLIENT_ID,
-      "client_secret" : process.env.CLIENT_SECRET
+      "client_id" : client_id,
+      "client_secret" : cliend_secret
     }
   }
 
@@ -83,7 +82,7 @@ const getAccessToken = async () =>{
   config.HEADER.headers["Content-Length"] = content_length
 
 
-  const token = await instance.post(CALL_OAUTH_LINE,formData,config.HEADER).catch(err=>console.log(err))
+  const token = await axios.post(CALL_OAUTH_LINE,formData,config.HEADER).catch(err=>console.log(err))
   HEADER.headers.Authorization = "Bearer " + token.data.access_token
   return token.data.access_token
 }

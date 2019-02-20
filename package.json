@@ -4,7 +4,8 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "start": "nodemon ./bin/start --ignore tea-admin/",
+    "start": "nodemon ./bin/start",
+    "start-dev" : "nodemon ./bin/start --ignore tea-admin/",
     "start-docker" : "nodemon ./bin/start",
     "test": "mocha --recursive './test/*Test.js' --compilers js:babel-core/register",
     "deploy": "firebase deploy --only functions",

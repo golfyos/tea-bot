@@ -1,6 +1,6 @@
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import Debug from 'debug';
+// import Debug from 'debug';
 import express from 'express';
 import logger from 'morgan';
 import path from 'path';
@@ -9,7 +9,7 @@ import path from 'path';
 import cors from 'cors'
 
 import index from './routes/index';
-import session from 'express-session'
+// import session from 'express-session'
 import mongoose from 'mongoose'
 import {usedDatabase} from './config/database'
 const functions = require("firebase-functions")
@@ -17,7 +17,7 @@ const functions = require("firebase-functions")
 const USED_DATABASE = usedDatabase
 
 const app = express();
-const debug = Debug('techberry-bot:app');
+// const debug = Debug('techberry-bot:app');
 app.set('views', path.join(__dirname, 'views'));
 // view engine setup
 app.set('view engine', 'pug');
@@ -41,14 +41,6 @@ db.once('open',()=>{
 })
 
 app.use(cookieParser());
-app.use(session({
-  secret:"Milk Tea",
-  resave: true,
-  saveUninitialized: true,
-  cookie: { 
-    secure: true,
-  }
-}))
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'tea-admin')));
 
