@@ -1,6 +1,6 @@
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-// import Debug from 'debug';
+import debug from 'debug';
 import express from 'express';
 import logger from 'morgan';
 import path from 'path';
@@ -71,6 +71,7 @@ app.use((err, req, res, next) => {
 
 // Handle uncaughtException
 process.on('uncaughtException', (err) => {
+  console.log(err)
   debug('Caught exception: %j', err);
   process.exit(1);
 });

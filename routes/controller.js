@@ -4,6 +4,7 @@ import fs from 'fs'
 import axios from 'axios'
 import querystring from 'querystring'
 import path from 'path'
+import {client_id,cliend_secret} from '../config/config'
 
 const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
 
@@ -16,8 +17,8 @@ const getAccessToken = async () =>{
     },
     body : {
       "grant_type" : "client_credentials",
-      "client_id" : process.env.CLIENT_ID,
-      "client_secret" : process.env.CLIENT_SECRET
+      "client_id" : client_id,
+      "client_secret" : cliend_secret
     }
   }
 
