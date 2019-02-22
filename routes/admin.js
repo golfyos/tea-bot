@@ -2,7 +2,7 @@ import express from 'express'
 const router = express.Router();
 import axios from 'axios'
 import {makeTextMessageObj} from '../util/data_util.js'
-import {client_id,cliend_secret} from '../config/config'
+import {client_id,client_secret} from '../config/config'
 import querystring from 'querystring'
 import Order from '../model/order'
 import {usedGroup} from '../config/config'
@@ -22,7 +22,7 @@ const getAccessToken = async () =>{
     body : {
       "grant_type" : "client_credentials",
       "client_id" : client_id,
-      "client_secret" : cliend_secret
+      "client_secret" : client_secret
     }
   }
 

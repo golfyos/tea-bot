@@ -1,6 +1,6 @@
 import express from 'express';
 import axios from 'axios'
-import {usedGroup,channelAccessToken,client_id,cliend_secret} from '../config/config'
+import {usedGroup,channelAccessToken,client_id,client_secret} from '../config/config'
 const router = express.Router();
 import localStorage from 'localStorage'
 import querystring from 'querystring'
@@ -72,7 +72,7 @@ const getAccessToken = async () =>{
     body : {
       "grant_type" : "client_credentials",
       "client_id" : client_id,
-      "client_secret" : cliend_secret
+      "client_secret" : client_secret
     }
   }
 
