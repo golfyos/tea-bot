@@ -20,5 +20,6 @@ You can use Bot Manager at your port 3001 after starting this web application.
 
 ### TEST
 ```
+$ npm install
 $ npm run test
 ```
