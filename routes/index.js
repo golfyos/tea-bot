@@ -42,8 +42,11 @@ const COMMAND_WORDS = [MESSAGE_START_ORDER,MESSAGE_END_ORDER]
 const ADMIN_GOLF_ID = "Ud4176bdaea15ecbd5ef5841d2484f815"
 const ADMIN_PJOM_ID = "U0695ecbf766079f40dc52f5ce62ec8a1"
 const ADMIN_PYO_ID = "Ubb429e18e52f145b20fe70f0227062ea";
+const ADMIN_PDUI_ID = "U69341d9651ee4432ac315f1455b48e17"
+const ADMIN_PROSE_ID = "Ud36fec4e78673c451642c14fb5eed493"
+const ADMIN_JAH_ID = "Ub2080c10bf84a1ef1915e74ef251e14e"
 /* golf p'jom jah pyo */
-const ADMIN_IDs = ["Ud4176bdaea15ecbd5ef5841d2484f815","U0695ecbf766079f40dc52f5ce62ec8a1","Ub2080c10bf84a1ef1915e74ef251e14e","Ubb429e18e52f145b20fe70f0227062ea"]
+const ADMIN_IDs = [ADMIN_GOLF_ID,ADMIN_PJOM_ID,ADMIN_JAH_ID,ADMIN_PYO_ID,ADMIN_PDUI_ID,ADMIN_PROSE_ID]
 const MESSAGE_GREETING_START_ORDER = "=================\n=======เริ่มสั่งได้=======\n================="
 const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
 const BOT_STATUS_VERSION = "Bot Version: 2.0.8\n"
