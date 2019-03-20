@@ -49,7 +49,7 @@ const ADMIN_JAH_ID = "Ub2080c10bf84a1ef1915e74ef251e14e"
 const ADMIN_IDs = [ADMIN_GOLF_ID,ADMIN_PJOM_ID,ADMIN_JAH_ID,ADMIN_PYO_ID,ADMIN_PDUI_ID,ADMIN_PROSE_ID]
 const MESSAGE_GREETING_START_ORDER = "=================\n=======เริ่มสั่งได้=======\n================="
 const MESSAGE_GREETING_END_ORDER = "=================\n====ปิดรับออเดอร์====\n================="
-const BOT_STATUS_VERSION = "Bot Version: 2.0.8\n"
+const BOT_STATUS_VERSION = "Bot Version: 2.3.0\n"
 const MESSAGE_ORDER_WORD = "สั่ง"
 const MESSAGE_EDIT_ORDER = "แก้"
 const MESSAGE_DELETE_ORDER = "ลบ"
