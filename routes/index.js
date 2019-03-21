@@ -345,8 +345,8 @@ router.post("/webhook/callback",async (req,res,next)=>{
                 "replyToken" : replyToken,
                 "messages" : messageObj
               }
+              await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
             }else{
-
               await Order.findOne({orderName:oldOrder,userId:userId,name:name},async (err,oldOrderResult)=>{
                 if(oldOrderResult == undefined){
                   messageObj.push(makeTextMessageObj("Warning:ไม่สามารถแก้ไขแทนกันได้น้ะจ้ะ\nYour Old order Not Found!\nโปรดระบุอออเดอร์เก่าให้ถูกต้อง"))
@@ -354,6 +354,7 @@ router.post("/webhook/callback",async (req,res,next)=>{
                     "replyToken" : replyToken,
                     "messages" : messageObj
                   }
+                  await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
                 }else{
                   messageObj.push(makeTextMessageObj("Edited: "+oldOrder + " --> " + newOrder))
                   bodyData = {
@@ -362,10 +363,10 @@ router.post("/webhook/callback",async (req,res,next)=>{
                   }
                   oldOrderResult.orderName = newOrder
                   await oldOrderResult.save().catch(err=>console.log(err))
+                  await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
                 }
               })
             }
-            await axios.post(CALL_REPLY_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
           }
 
           else if(command == MESSAGE_DELETE_ORDER){
