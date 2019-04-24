@@ -82,6 +82,10 @@ const showSummary = (to) => {
   })  
 }
 
+const findOrderAll = () => {
+  return Order.find({}).exec()
+}
+
 
 router.post("/",(req,res)=>{
   console.log(req.body)
@@ -114,14 +118,14 @@ router.post("/send/message",async (req,res,next)=>{
 })
 
 router.get("/listorder",async(req,res)=>{
-  Order.find({})
-    .exec()
-    .then((result)=>{
-      console.log(result)
-      res.status(200)
-      res.send({orders:result})
-    })
-    .catch(err=>console.log(err))
+  const orders = await findOrderAll().catch(err=>console.log(err))
+  if(orders){
+    console.log(orders)
+    res.status(200)
+    res.send({orders})
+  }else{
+    res.status(200).send({orders:[]})
+  }
 })
 
 router.get("/summary",async(req,res)=>{
@@ -155,5 +159,17 @@ router.post("/end/order",(req,res)=>{
   
 })
 
+router.post("/addprice",async (req,res)=>{
+  // const {prices} = req.body
+  // const order = await findOrderAll()
+  // if(order){
+  //   const msgList = this.state.orders.map(order=>{
+  //     const price = prices[order._id]
+  //     priceAccumulator += parseInt(price)
+  //     return `${counter++}) ${order.orderName} -> [${order.name}] \uDBC0\uDC50${price}฿ `
+  //   })
+  // }
+
+})
 
 export default router
