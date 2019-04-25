@@ -5,6 +5,7 @@ import {makeTextMessageObj} from '../util/data_util.js'
 import {client_id,client_secret} from '../config/config'
 import querystring from 'querystring'
 import Order from '../model/order'
+import History from '../model/history'
 import {usedGroup} from '../config/config'
 import {HOWTO_MESSAGE} from './index'
 const USED_GROUP = usedGroup
@@ -157,6 +158,25 @@ router.post("/start/order",(req,res)=>{
 
 router.post("/end/order",(req,res)=>{
   
+})
+
+router.get("/history/orders",(req,res)=>{
+  const currentDate = new Date(2019,3,25)
+  const date = currentDate.getDate()
+  const month = currentDate.getMonth()
+  const year = currentDate.getFullYear()
+  const start = new Date(year,month,date,0,0,0)
+  const end = new Date(year,month,date,23,59,59)
+
+  const query = {timestamp: {$gte:start,$lte:end}}
+  History.find(query).exec()
+  .then(results=>{
+    console.log("results:",results)
+    return results
+  })
+  .then((results)=>{
+    res.status(200).send({success:true,data:results})
+  })
 })
 
 router.post("/addprice",async (req,res)=>{

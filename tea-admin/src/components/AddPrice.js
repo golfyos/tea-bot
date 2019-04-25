@@ -1,10 +1,11 @@
 import React, { Fragment, Component } from "react"
 import axios from "axios"
-import { InputGroup, InputGroupAddon, Input , Button } from "reactstrap"
+import { InputGroup, InputGroupAddon, Input, Button, Spinner } from "reactstrap"
 
 import { HOST } from "../config/config"
 const CALL_LIST = HOST + "/api/v1/listorder"
-const CALL_SEND_LINE = HOST+"/api/v1/send/message"
+const CALL_SEND_LINE = HOST + "/api/v1/send/message"
+const CALL_GET_HISTORY = HOST + "/api/v1/history/orders"
 // const CALL_ADD_PRICE = HOST+"/api/v1/addprice"
 
 class AddPrice extends Component {
@@ -12,7 +13,8 @@ class AddPrice extends Component {
     super()
     this.state = {
       orders: [],
-      prices: {}
+      prices: {},
+      isLoading: true
     }
   }
 
@@ -20,29 +22,27 @@ class AddPrice extends Component {
     const orders = await axios.get(CALL_LIST, {})
     const data = orders.data.orders
     // console.log(data)
-    this.setState({ orders: data })
+    this.setState({ orders: data,isLoading:false})
   }
 
-
-  onAddPrice = (e,id) => {
+  onAddPrice = (e, id) => {
     const price = e.target.value
-    
-    this.setState((prevState=>{
+
+    this.setState(prevState => {
       return {
         prices: {
           ...prevState.prices,
           [id]: price
         }
       }
-    }))
+    })
   }
 
   sendPrice = async () => {
-    
     /**
      * @type {Object}
      */
-    const {prices} = this.state
+    const { prices } = this.state
     console.log(prices)
 
     /**
@@ -53,49 +53,51 @@ class AddPrice extends Component {
     /**
      * @type {string[]}
      */
-    const msgList = this.state.orders.map(order=>{
+    const msgList = this.state.orders.map(order => {
       const price = prices[order._id]
       priceAccumulator += parseInt(price)
-      return `${counter++}) ${order.orderName} -> [${order.name}] \uDBC0\uDC50${price}฿ `
+      return `${counter++}) ${order.orderName} -> [${
+        order.name
+      }] \uDBC0\uDC50${price}฿ `
     })
 
     let msg = msgList.join("\n")
     msg = msg + `\n\uDBC0\uDCB4 total: ${priceAccumulator}฿`
 
     const requestBody = {
-      "message" : msg
+      message: msg
     }
 
     const configHeader = {
-      headers : {
-        "Content-Type" : "application/json",
+      headers: {
+        "Content-Type": "application/json"
       }
     }
-
-    await axios.post(CALL_SEND_LINE,requestBody,configHeader)
-
+    await axios.post(CALL_SEND_LINE, requestBody, configHeader)
   }
-
 
   /**
    * @type {Function}
    * @returns {boolean}
    */
-  isBlankPriceField = ()=> {
-    const {prices,orders} = this.state
-    if(orders.length > Object.keys(prices).length){
+  isBlankPriceField = () => {
+    const { prices, orders } = this.state
+    if (orders.length > Object.keys(prices).length) {
       return true
-    }
-    else if(orders.length === Object.keys(prices).length){
-      for(const key in prices){
-        if(prices[key] === ""){
+    } else if (orders.length === Object.keys(prices).length && orders.length != 0 && Object.keys(prices) != 0) {
+      for (const key in prices) {
+        if (prices[key] === "") {
           return true
         }
       }
       return false
-    }else{
+    } else {
       return true
     }
+  }
+
+  getOrdersHistory = async () => {
+    const result = await axios.get(CALL_GET_HISTORY)
   }
 
   render() {
@@ -107,13 +109,35 @@ class AddPrice extends Component {
             {" "}
             {order.orderName} [{order.name}]{" "}
           </InputGroupAddon>{" "}
-          <Input size="5" onChange={(e)=>this.onAddPrice(e,order._id)} placeholder="Amount" type="number" step="1" />{" "}
+          <Input
+            size="5"
+            onChange={e => this.onAddPrice(e, order._id)}
+            placeholder="Amount"
+            type="number"
+            step="1"
+          />{" "}
           <InputGroupAddon addonType="append">฿</InputGroupAddon>
         </InputGroup>
       </li>
     ))
 
-    const validatedButton = this.isBlankPriceField()? <Button outline color="info" disabled>Send Price</Button> : <Button color="info" onClick={this.sendPrice} >Send Price</Button>
+    const validatedButton = this.isBlankPriceField() ? (
+      <Button outline color="info" disabled>
+        Send Price
+      </Button>
+    ) : (
+      <Button color="info" onClick={this.sendPrice}>
+        Send Price
+      </Button>
+    )
+
+
+    if(this.state.isLoading){
+      return (
+        <div><Spinner color="primany"/></div>
+      )
+    }
+
     return (
       <Fragment>
         <div>
