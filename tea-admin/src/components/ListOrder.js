@@ -25,6 +25,16 @@ class ListOrder extends Component {
 
   render(){
     const list = this.state.orders.map((order,index)=>(<li key={index}>{order.orderName} [{order.name}]</li>))
+
+
+    if(list.length == 0 ){
+      return(
+        <div className="order-container">
+          No current order just now!
+        </div>
+      )
+    }
+
     return(
       <Fragment>
         <div className="order-container">

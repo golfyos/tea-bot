@@ -3,10 +3,10 @@ import axios from "axios"
 import { InputGroup, InputGroupAddon, Input, Button, Spinner } from "reactstrap"
 
 import { HOST } from "../config/config"
-const CALL_LIST = HOST + "/api/v1/listorder"
+// const CALL_LIST = HOST + "/api/v1/listorder"
 const CALL_SEND_LINE = HOST + "/api/v1/send/message"
-const CALL_GET_HISTORY = HOST + "/api/v1/history/orders"
-// const CALL_ADD_PRICE = HOST+"/api/v1/addprice"
+// const CALL_GET_HISTORY = HOST + "/api/v1/history/orders"
+const CALL_ADD_PRICE = HOST+"/api/v1/addprice"
 
 class AddPrice extends Component {
   constructor() {
@@ -14,15 +14,20 @@ class AddPrice extends Component {
     this.state = {
       orders: [],
       prices: {},
-      isLoading: true
+      isLoading: false
     }
   }
 
   componentDidMount = async () => {
-    const orders = await axios.get(CALL_LIST, {})
-    const data = orders.data.orders
+    console.log("props:: ",this.props)
+
+    // const orders = await axios.get(CALL_LIST, {})
+    // const data = orders.data.orders
+    if(this.props.location.state){
+      const data = this.props.location.state.data
+      this.setState({ orders: data})
+    }
     // console.log(data)
-    this.setState({ orders: data,isLoading:false})
   }
 
   onAddPrice = (e, id) => {
@@ -58,7 +63,7 @@ class AddPrice extends Component {
       priceAccumulator += parseInt(price)
       return `${counter++}) ${order.orderName} -> [${
         order.name
-      }] \uDBC0\uDC50${price}฿ `
+      }] = \uDBC0\uDC50${price}฿ `
     })
 
     let msg = msgList.join("\n")
@@ -76,6 +81,32 @@ class AddPrice extends Component {
     await axios.post(CALL_SEND_LINE, requestBody, configHeader)
   }
 
+
+  onSendPrice = async () => {
+
+    /**
+     * @type {Object}
+     */
+    const bodyData = {
+      data : {}
+    }
+
+    /**
+     * @type {Object[]}
+     */
+    const orders = [...this.state.orders]
+    const ordersWithPrice = orders.map(order=>{
+      const id = order._id
+      order.price = this.state.prices[id]
+      return order
+    })
+
+    bodyData.data.orders = ordersWithPrice
+    bodyData.data.id = this.props.location.state.id
+    // console.log("order with price: ", ordersWithPrice)
+    axios.post(CALL_ADD_PRICE,bodyData,{headers:{"Content-Type":"application/json"}})
+  }
+
   /**
    * @type {Function}
    * @returns {boolean}
@@ -84,7 +115,7 @@ class AddPrice extends Component {
     const { prices, orders } = this.state
     if (orders.length > Object.keys(prices).length) {
       return true
-    } else if (orders.length === Object.keys(prices).length && orders.length != 0 && Object.keys(prices) != 0) {
+    } else if (orders.length === Object.keys(prices).length && orders.length !== 0 && Object.keys(prices) !== 0) {
       for (const key in prices) {
         if (prices[key] === "") {
           return true
@@ -94,10 +125,6 @@ class AddPrice extends Component {
     } else {
       return true
     }
-  }
-
-  getOrdersHistory = async () => {
-    const result = await axios.get(CALL_GET_HISTORY)
   }
 
   render() {
@@ -126,7 +153,7 @@ class AddPrice extends Component {
         Send Price
       </Button>
     ) : (
-      <Button color="info" onClick={this.sendPrice}>
+      <Button color="info" onClick={this.onSendPrice}>
         Send Price
       </Button>
     )

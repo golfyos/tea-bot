@@ -42,7 +42,7 @@ db.once('open',()=>{
 
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'tea-admin')));
+// app.use(express.static(path.join(__dirname, 'tea-admin')));
 
 app.use('/', index);
 
@@ -61,6 +61,7 @@ app.use((req, res, next) => {
 // error handler
 /* eslint no-unused-vars: 0 */
 app.use((err, req, res, next) => {
+  console.log("Error: ",err)
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

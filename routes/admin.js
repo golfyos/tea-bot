@@ -8,6 +8,7 @@ import Order from '../model/order'
 import History from '../model/history'
 import {usedGroup} from '../config/config'
 import {HOWTO_MESSAGE} from './index'
+import {inspect} from 'util'
 const USED_GROUP = usedGroup
 const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
 const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
@@ -161,7 +162,7 @@ router.post("/end/order",(req,res)=>{
 })
 
 router.get("/history/orders",(req,res)=>{
-  const currentDate = new Date(2019,3,25)
+  const currentDate = new Date(Date.now())
   const date = currentDate.getDate()
   const month = currentDate.getMonth()
   const year = currentDate.getFullYear()
@@ -179,7 +180,7 @@ router.get("/history/orders",(req,res)=>{
   })
 })
 
-router.post("/addprice",async (req,res)=>{
+router.post("/addprice",async (req,res,next)=>{
   // const {prices} = req.body
   // const order = await findOrderAll()
   // if(order){
@@ -189,6 +190,31 @@ router.post("/addprice",async (req,res)=>{
   //     return `${counter++}) ${order.orderName} -> [${order.name}] \uDBC0\uDC50${price}฿ `
   //   })
   // }
+
+  console.log("req.body")
+  console.log(inspect(req.body,{colors:true,depth:Infinity}))
+  const {orders,id} = req.body.data
+
+  History.findOne({_id:id})
+    .exec()
+    .then(result=>{
+      if(result){
+        result.orders = orders
+        return result
+      }else{
+        return Promise.reject("Historical order not found!")
+      }
+    })
+    .then(result=> {
+      console.log("result then2: ",result)
+      result.save()
+        .then(saveResult=>{
+          console.log("saveResult: ",saveResult)
+          res.status(200).send({success:true})
+        })
+        .catch(err=>next({message:"Cannot save new data:" + err}))
+    })
+    .catch(err=>next({message:err}))
 
 })
 

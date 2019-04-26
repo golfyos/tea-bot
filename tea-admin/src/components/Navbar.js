@@ -56,7 +56,7 @@ class NavbarComponent extends Component {
 
   render() {
     return (
-      <div className="navbar">
+      // <div className="navbar">
         <Navbar fixed="top" color="light" light expand="md">
           <NavbarBrand>
             <Link className="nav-link" to="/">
@@ -158,7 +158,7 @@ class NavbarComponent extends Component {
             </ModalFooter>
           </Modal>
         </Navbar>
-      </div>
+      // </div>
     );
   }
 }
