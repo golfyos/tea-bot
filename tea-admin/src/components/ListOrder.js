@@ -1,5 +1,5 @@
 import React , {Component , Fragment} from 'react'
-import {Spinner } from 'reactstrap'
+import {Spinner} from 'reactstrap'
 import {HOST} from '../config/config'
 import axios from 'axios'
 import "../styles/ListOrder.css"
