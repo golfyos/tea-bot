@@ -1,6 +1,6 @@
 import React, { Fragment, Component } from "react"
 import axios from "axios"
-import { InputGroup, InputGroupAddon, Input, Button, Spinner } from "reactstrap"
+import { InputGroup, InputGroupAddon, Input, Button, Spinner , Table } from "reactstrap"
 
 import { HOST } from "../config/config"
 // const CALL_LIST = HOST + "/api/v1/listorder"
@@ -129,23 +129,21 @@ class AddPrice extends Component {
 
   render() {
     const list = this.state.orders.map(order => (
-      <li key={order._id}>
-        {" "}
-        <InputGroup>
-          <InputGroupAddon addonType="prepend">
-            {" "}
-            {order.orderName} [{order.name}]{" "}
-          </InputGroupAddon>{" "}
-          <Input
-            size="5"
-            onChange={e => this.onAddPrice(e, order._id)}
-            placeholder="Amount"
-            type="number"
-            step="1"
-          />{" "}
-          <InputGroupAddon addonType="append">฿</InputGroupAddon>
-        </InputGroup>
-      </li>
+      <tr key={order._id}>
+        <td> {order.orderName} [{order.name}]</td>
+        <td>
+            <Input
+              onChange={e => this.onAddPrice(e, order._id)}
+              placeholder="Amount"
+              type="number"
+              step="1"
+              style={{maxWidth:150}}
+              min={0}
+            /></td>
+            <td>
+            <InputGroupAddon addonType="append">฿</InputGroupAddon>
+            </td>
+      </tr>
     ))
 
     const validatedButton = this.isBlankPriceField() ? (
@@ -168,7 +166,7 @@ class AddPrice extends Component {
     return (
       <Fragment>
         <div>
-          <ol>{list}</ol>
+          <div>{list}</div>
           {validatedButton}
         </div>
       </Fragment>

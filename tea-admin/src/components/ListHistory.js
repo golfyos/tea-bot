@@ -22,7 +22,7 @@ class ListHistory extends Component{
     console.log("orders", orders)
 
     for(const item of orders){
-      const order = item.order
+      let order = item.order
 
       const newData = {
         id: item._id,
