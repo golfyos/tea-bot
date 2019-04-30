@@ -10,43 +10,48 @@ class ListHistory extends Component{
 
   state = {
     restaurant : [],
-    isLoading : true
+    isLoading : true,
+    errorMessage: ""
   }
 
   componentDidMount = async () => {
-    const result = await axios.get(CALL_LIST_HISTORY)
-    console.log("result: ",result)
-    const orders = result.data.data
-    let res = []
+    try{
+      const result = await axios.get(CALL_LIST_HISTORY)
+      console.log("result: ",result)
+      const orders = result.data.data
+      let res = []
 
-    console.log("orders", orders)
+      console.log("orders", orders)
 
-    for(const item of orders){
-      let order = item.order
+      for(const item of orders){
+        let order = item.order
 
-      const newData = {
-        id: item._id,
-        name: order,
-        orders: item.orders
+        const newData = {
+          id: item._id,
+          name: order,
+          orders: item.orders
+        }
+
+        if(order===""){
+
+          /**
+           * @type {Date}
+           */
+          const time = new Date(item.timestamp)
+          const timeList = [time.getHours(),time.getMinutes(),time.getSeconds()]
+          const dateList = [time.getDate(),(time.getMonth()+1),time.getFullYear()]
+          order = dateList.join("/") + "\n" + timeList.join(":")
+
+          newData.name = order
+
+        }
+        res.push(newData)
       }
-
-      if(order===""){
-
-        /**
-         * @type {Date}
-         */
-        const time = new Date(item.timestamp)
-        const timeList = [time.getHours(),time.getMinutes(),time.getSeconds()]
-        const dateList = [time.getDate(),(time.getMonth()+1),time.getFullYear()]
-        order = dateList.join("/") + "\n" + timeList.join(":")
-
-        newData.name = order
-
-      }
-      res.push(newData)
+      this.setState({restaurant:res,isLoading:false,errorMessage:""})
+    }catch(err){
+      this.setState({isLoading:false,errorMessage:err})
     }
 
-    this.setState({restaurant:res,isLoading:false})
   }
 
 
@@ -57,15 +62,25 @@ class ListHistory extends Component{
 
   render(){
 
-    const ListRestaurant = this.state.restaurant.map(item=><Button onClick={()=> this.goToOrderHistory(item.id,item.orders)} color="primary" size="lg" block>{item.name}</Button>)
-    console.log(this.state.restaurant)
-    console.log("props",this.props)
-    if(this.state.isLoading){
+    const {restaurant,isLoading,errorMessage} = this.state
+    const ListRestaurant = restaurant.map(item=><Button onClick={()=> this.goToOrderHistory(item.id,item.orders)} color="primary" size="lg" block>{item.name}</Button>)
+    // console.log(this.state.restaurant)
+    // console.log("props",this.props)
+    if(isLoading){
       return(
-        <div><Spinner type="grow" color="primary" />
-        <Spinner type="grow" color="secondary" />
-        <Spinner type="grow" color="success" />
-        <Spinner type="grow" color="danger" /></div>
+        <div>
+          <Spinner type="grow" color="primary" />
+          <Spinner type="grow" color="secondary" />
+          <Spinner type="grow" color="success" />
+          <Spinner type="grow" color="danger" />
+        </div>
+      )
+    }
+    if(errorMessage !== ""){
+      return (
+        <div>
+          {"Network Error"}
+        </div>
       )
     }
     return(

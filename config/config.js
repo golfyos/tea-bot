@@ -9,4 +9,4 @@ export const client_id = "1622053629"
 export const client_secret = "bc80a788f78e98a829fc6df5f476c5dc"
 export const VERSION = "3.0.1"
 
-export const usedGroup = milkTeaGroup
+export const usedGroup = process.env.NODE_ENV === "development" ? testGroup : milkTeaGroup

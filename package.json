@@ -4,8 +4,10 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "start": "nodemon ./bin/start",
-    "start-dev": "nodemon ./bin/start --ignore tea-admin/",
+    "start": "echo 'Choose dev or prod environment: start:dev OR start:prod'",
+    "start:dev": "set NODE_ENV=development&& nodemon ./bin/start --ignore tea-admin/",
+    "start:prod": "set NODE_ENV=production&& nodemon ./bin/start --ignore tea-admin/",
+    "start:react": "cd tea-admin && yarn start",
     "start-docker": "nodemon ./bin/start",
     "test": "mocha --recursive './test/*Test.js' --compilers js:babel-core/register",
     "deploy": "firebase deploy --only functions",
