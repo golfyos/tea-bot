@@ -7,7 +7,6 @@ import path from 'path';
 // import favicon from 'serve-favicon';
 
 import cors from 'cors'
-
 import index from './routes/index';
 // import session from 'express-session'
 import mongoose from 'mongoose'
