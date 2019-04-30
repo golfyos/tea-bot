@@ -39,6 +39,24 @@ const getAccessToken = async () =>{
 }
 
 
+const sendLineMessagePush = async (msg) => {
+  const token = await getAccessToken()
+  
+ 
+  const data = {
+    "to" : USED_GROUP,
+    "messages" : [makeTextMessageObj(msg)]
+  }
+
+  const header = {
+    headers : {
+      "Content-Type" : "application/json",
+      "Authorization" : "Bearer " + token
+    }
+  }
+  const responseLine = await axios.post(CALL_SEND_MESSAGE,data,header).catch(err=>console.log(err))
+}
+
 /**
  * 
  * @param {*} to 
@@ -180,6 +198,23 @@ router.get("/history/orders",(req,res)=>{
   })
 })
 
+//\uDBC0\uDC50
+const sendListWithPrice = (resultList)=> {
+  let priceAccumulator = 0
+  let counter = 1
+  const msgList = resultList.map(order => {
+    const price = order.price
+    priceAccumulator += parseInt(price)
+    return `${counter++}) ${order.orderName} -> [${order.name}] = ${price}฿ `
+  })
+
+  let msg = msgList.join("\n")
+  msg = msg + `\n\uDBC0\uDCB4 total: ${priceAccumulator}฿`
+
+  sendLineMessagePush(msg)
+
+}
+
 router.post("/addprice",async (req,res,next)=>{
   // const {prices} = req.body
   // const order = await findOrderAll()
@@ -210,6 +245,7 @@ router.post("/addprice",async (req,res,next)=>{
       result.save()
         .then(saveResult=>{
           console.log("saveResult: ",saveResult)
+          sendListWithPrice(result.orders)
           res.status(200).send({success:true})
         })
         .catch(err=>next({message:"Cannot save new data:" + err}))
