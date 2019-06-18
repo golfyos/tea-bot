@@ -501,8 +501,7 @@ const generatePDF = (data) => {
 }
 
 router.all("*",(req,res,next)=>{
-  res.setTimeout(1)
-  res.redirect("/")
+  next()
 })
 
 export default router;

@@ -40,15 +40,16 @@ db.once('open',()=>{
 })
 
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 // app.use(express.static(path.join(__dirname, 'tea-admin')));
 
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
-
-
 app.get("/*",(req,res,next)=>{
   res.sendFile(path.resolve(__dirname,"public","index.html"))
+  // res.sendFile(path.join(__dirname, 'public','index.html'))
 })
+
+
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {
