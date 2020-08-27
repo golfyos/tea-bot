@@ -6,7 +6,7 @@ import localStorage from 'localStorage'
 import querystring from 'querystring'
 import https from 'https'
 
-import {responseData,makeTextMessageObj,makeStickerMessageObj} from '../util/data_util'
+import {responseData,makeTextMessageObj,makeStickerMessageObj} from '../utils/data_util'
 import Order from '../model/order'
 import User from '../model/user'
 import History from '../model/history'
