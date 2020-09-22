@@ -1,8 +1,10 @@
+import axios from 'axios'
 import express from 'express'
 const router = express.Router();
-import axios from 'axios'
+
 import {makeTextMessageObj} from '../util/data_util.js'
 import {client_id,client_secret} from '../config/config'
+import config from '../config/config.json'
 import querystring from 'querystring'
 import Order from '../model/order'
 import History from '../model/history'
@@ -15,7 +17,7 @@ const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
 
 
 const getAccessToken = async () =>{
-  let config = {
+  let options = {
     HEADER: {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -23,15 +25,15 @@ const getAccessToken = async () =>{
     },
     body : {
       "grant_type" : "client_credentials",
-      "client_id" : client_id,
-      "client_secret" : client_secret
+      "client_id" : config.line.clientId,
+      "client_secret" : config.line.clientSecret
     }
   }
 
-  const formData = querystring.stringify(config.body)
+  const formData = querystring.stringify(options.body)
   const content_length = formData.length
 
-  config.HEADER.headers["Content-Length"] = content_length
+  options.HEADER.headers["Content-Length"] = content_length
 
 
   const token = await axios.post(CALL_OAUTH_LINE,formData,config.HEADER).catch(err=>console.log(err))
