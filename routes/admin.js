@@ -1,17 +1,15 @@
 import axios from 'axios'
 import express from 'express'
+import { inspect } from 'util'
 const router = express.Router();
 
 import {makeTextMessageObj} from '../util/data_util.js'
-import {client_id,client_secret} from '../config/config'
 import config from '../config/config.json'
 import querystring from 'querystring'
 import Order from '../model/order'
 import History from '../model/history'
-import {usedGroup} from '../config/config'
 import {HOWTO_MESSAGE} from './index'
-import {inspect} from 'util'
-const USED_GROUP = usedGroup
+const USED_GROUP = config.line.groupId
 const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
 const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
 
@@ -56,7 +54,13 @@ const sendLineMessagePush = async (msg) => {
       "Authorization" : "Bearer " + token
     }
   }
-  const responseLine = await axios.post(CALL_SEND_MESSAGE,data,header).catch(err=>console.log(err))
+
+  
+  await axios({
+    method: "POST",
+    data: data,
+    headers: header
+  }).catch(err=>console.log(err))
 }
 
 /**
@@ -67,8 +71,7 @@ const sendLineMessagePush = async (msg) => {
  */
 const showSummary = (to) => {
   return new Promise(async(resolve,reject)=>{
-    if(to != undefined){
-      
+    if(to){
       const results = await Order.find({}).exec().catch(err=>reject(err))
       let msg = ""
       if(results.length > 0){
