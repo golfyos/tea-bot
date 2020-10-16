@@ -75,20 +75,26 @@ const showSummary = (to) => {
       const results = await Order.find({}).exec().catch(err=>reject(err))
       let msg = ""
       if(results.length > 0){
-        let summaryString = ""
+
+        const summaryMessage = []
+
         for(let [index,order] of results.entries()){
+
           const orderName = order.orderName
           const name = order.name
           const counter = (index+1) +") "
-          summaryString = summaryString + counter + orderName + " -> [" + name + "]\n"
+
+          summaryMessage.push(counter,  orderName, " -> [", name, "]\n")
         }
-        if(summaryString.length>0){
-          summaryString = summaryString.substring(0,summaryString.length-1)
+
+        if(summaryMessage.length>0){
+          summaryMessage.splice(0, summaryMessage.length - 1)
         }
-        msg = [makeTextMessageObj(summaryString)]
+        msg = [makeTextMessageObj(summaryMessage.join(''))]
       }else{
         msg = [makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]
       }
+
       let bodyData = {
         "to" : to,
         "messages" : msg
