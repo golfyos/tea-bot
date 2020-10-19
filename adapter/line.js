@@ -7,10 +7,10 @@ export class Line {
         
     }
 
-    static async getAccessToken(id, secret, grantType) {
+    static async getAccessToken(id, secret) {
 
         const body = {
-            grant_type: grantType, // client_credentials
+            grant_type: 'client_credentials',
             client_id: id,
             client_secret: secret
         }
@@ -28,6 +28,7 @@ export class Line {
         try {
 
             const token = await axios({
+                url: 'https://api.line.me/v2/oauth/accessToken',
                 method: 'post',
                 data: formData,
                 headers: headers
