@@ -3,46 +3,20 @@ import express from 'express'
 import { inspect } from 'util'
 const router = express.Router();
 
-import {makeTextMessageObj} from '../util/data_util.js'
+import {makeTextMessageObj} from '../utils/data_util.js'
 import config from '../config/config.json'
-import querystring from 'querystring'
 import Order from '../model/order'
 import History from '../model/history'
 import {HOWTO_MESSAGE} from './index'
+import { Line } from '../adapter/line.js';
+
 const USED_GROUP = config.line.groupId
-const CALL_OAUTH_LINE = "https://api.line.me/v2/oauth/accessToken"
 const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
 
 
-const getAccessToken = async () =>{
-  let options = {
-    HEADER: {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
-    },
-    body : {
-      "grant_type" : "client_credentials",
-      "client_id" : config.line.clientId,
-      "client_secret" : config.line.clientSecret
-    }
-  }
-
-  const formData = querystring.stringify(options.body)
-  const content_length = formData.length
-
-  options.HEADER.headers["Content-Length"] = content_length
-
-
-  const token = await axios.post(CALL_OAUTH_LINE,formData,config.HEADER).catch(err=>console.log(err))
-  return token.data.access_token
-}
-
-
 const sendLineMessagePush = async (msg) => {
-  const token = await getAccessToken()
+  const token = await Line.getAccessToken(config.line.clientId, config.line.clientSecret)
   
- 
   const data = {
     "to" : USED_GROUP,
     "messages" : [makeTextMessageObj(msg)]
@@ -55,8 +29,8 @@ const sendLineMessagePush = async (msg) => {
     }
   }
 
-  
   await axios({
+    url: 'https://api.line.me/v2/bot/message/push',
     method: "POST",
     data: data,
     headers: header
@@ -95,18 +69,19 @@ const showSummary = (to) => {
         msg = [makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]
       }
 
-      let bodyData = {
+      const bodyData = {
         "to" : to,
         "messages" : msg
       }
 
-      const token = await getAccessToken()
+      const token = await Line.getAccessToken(config.line.clientId, config.line.clientSecret)
       const HEADER = {
         headers : {
           "Content-Type" : "application/json",
           "Authorization" : "Bearer " + token
         }
       }
+
       await axios.post(CALL_SEND_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
       resolve(results)
     }
@@ -127,7 +102,7 @@ router.post("/",(req,res)=>{
 
 
 router.post("/send/message",async (req,res,next)=>{
-  const token = await getAccessToken()
+  const token = await Line.getAccessToken(config.line.clientId, config.line.clientSecret)
   const reqMessage = req.body.message
   const messages = [makeTextMessageObj(reqMessage)]
  
@@ -171,7 +146,7 @@ router.get("/howto",async(req,res)=>{
     "messages" : [makeTextMessageObj(HOWTO_MESSAGE)]
   }
 
-  const token = await getAccessToken()
+  const token = await Line.getAccessToken(config.line.clientId, config.line.clientSecret)
   const HEADER = {
     headers : {
       "Content-Type" : "application/json",
