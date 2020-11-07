@@ -13,30 +13,6 @@ import { Line } from '../adapter/line.js';
 const USED_GROUP = config.line.groupId
 const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
 
-
-const sendLineMessagePush = async (msg) => {
-  const token = await Line.getAccessToken(config.line.clientId, config.line.clientSecret)
-  
-  const data = {
-    "to" : USED_GROUP,
-    "messages" : [makeTextMessageObj(msg)]
-  }
-
-  const header = {
-    headers : {
-      "Content-Type" : "application/json",
-      "Authorization" : "Bearer " + token
-    }
-  }
-
-  await axios({
-    url: 'https://api.line.me/v2/bot/message/push',
-    method: "POST",
-    data: data,
-    headers: header
-  }).catch(err=>console.log(err))
-}
-
 /**
  * 
  * @param {*} to 
@@ -69,20 +45,8 @@ const showSummary = (to) => {
         msg = [makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]
       }
 
-      const bodyData = {
-        "to" : to,
-        "messages" : msg
-      }
+      Line.sendMessage(USED_GROUP, msg)
 
-      const token = await Line.getAccessToken(config.line.clientId, config.line.clientSecret)
-      const HEADER = {
-        headers : {
-          "Content-Type" : "application/json",
-          "Authorization" : "Bearer " + token
-        }
-      }
-
-      await axios.post(CALL_SEND_MESSAGE,bodyData,HEADER).catch(err=>console.log(err))
       resolve(results)
     }
   })  
@@ -197,7 +161,7 @@ const sendListWithPrice = (resultList)=> {
   let msg = msgList.join("\n")
   msg = msg + `\n\uDBC0\uDCB4 total: ${priceAccumulator}฿`
 
-  sendLineMessagePush(msg)
+  Line.sendMessage(USED_GROUP, msg)
 
 }
 
