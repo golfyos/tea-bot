@@ -1,17 +1,14 @@
-import axios from 'axios'
 import express from 'express'
 import { inspect } from 'util'
 const router = express.Router();
 
-import {makeTextMessageObj} from '../utils/data_util.js'
 import config from '../config/config.json'
 import Order from '../model/order'
 import History from '../model/history'
-import {HOWTO_MESSAGE} from './index'
+import { HOWTO_MESSAGE } from './index'
 import { Line } from '../adapter/line.js';
 
 const USED_GROUP = config.line.groupId
-const CALL_SEND_MESSAGE = "https://api.line.me/v2/bot/message/push"
 
 /**
  * 
@@ -40,12 +37,12 @@ const showSummary = (to) => {
         if(summaryMessage.length>0){
           summaryMessage.splice(0, summaryMessage.length - 1)
         }
-        msg = [makeTextMessageObj(summaryMessage.join(''))]
-      }else{
-        msg = [makeTextMessageObj("ยังไม่มีใครสั่งออเดอร์จ้า")]
+        msg = summaryMessage.join('')
+      }else {
+        msg = "ยังไม่มีใครสั่งออเดอร์จ้า"
       }
 
-      Line.sendMessage(USED_GROUP, msg)
+      await Line.sendMessage(USED_GROUP, msg)
 
       resolve(results)
     }
@@ -65,23 +62,10 @@ router.post("/",(req,res)=>{
 
 
 
-router.post("/send/message",async (req,res,next)=>{
-  const token = await Line.getAccessToken(config.line.clientId, config.line.clientSecret)
+router.post("/send/message",async (req,res)=>{
   const reqMessage = req.body.message
-  const messages = [makeTextMessageObj(reqMessage)]
- 
-  const data = {
-    "to" : USED_GROUP,
-    "messages" : messages
-  }
 
-  const header = {
-    headers : {
-      "Content-Type" : "application/json",
-      "Authorization" : "Bearer " + token
-    }
-  }
-  const responseLine = await axios.post(CALL_SEND_MESSAGE,data,header).catch(err=>console.log(err))
+  await Line.sendMessage(USED_GROUP, reqMessage)
 
   res.status(200)
   res.json({success:true})  
@@ -105,19 +89,7 @@ router.get("/summary",async(req,res)=>{
 
 
 router.get("/howto",async(req,res)=>{
-  let bodyData = {
-    "to" : USED_GROUP,
-    "messages" : [makeTextMessageObj(HOWTO_MESSAGE)]
-  }
-
-  const token = await Line.getAccessToken(config.line.clientId, config.line.clientSecret)
-  const HEADER = {
-    headers : {
-      "Content-Type" : "application/json",
-      "Authorization" : "Bearer " + token
-    }
-  }
-  await axios.post(CALL_SEND_MESSAGE,bodyData,HEADER)
+  await Line.sendMessage(USED_GROUP, HOWTO_MESSAGE)
   res.send({success:true,msg:HOWTO_MESSAGE})
 })
 
@@ -137,15 +109,20 @@ router.get("/history/orders",(req,res)=>{
   const start = new Date(year,month,date,0,0,0)
   const end = new Date(year,month,date,23,59,59)
 
-  const query = {timestamp: {$gte:start,$lte:end}}
+  const query = {
+    timestamp: {
+      $gte: start,
+      $lte: end
+    }
+  }
   History.find(query).exec()
-  .then(results=>{
-    console.log("results:",results)
-    return results
-  })
-  .then((results)=>{
-    res.status(200).send({success:true,data:results})
-  })
+    .then(results=>{
+      console.log("results:", results)
+      return results
+    })
+    .then((results)=>{
+      res.status(200).send({success:true,data:results})
+    })
 })
 
 //\uDBC0\uDC50
