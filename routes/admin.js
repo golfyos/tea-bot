@@ -6,7 +6,7 @@ import config from '../config/config.json'
 import Order from '../model/order'
 import History from '../model/history'
 import { HOWTO_MESSAGE } from './index'
-import { Line } from '../adapter/line.js';
+import { Line } from '../adapter/line.js'
 
 const USED_GROUP = config.line.groupId
 
@@ -126,7 +126,7 @@ router.get("/history/orders",(req,res)=>{
 })
 
 //\uDBC0\uDC50
-const sendListWithPrice = (resultList)=> {
+const sendListWithPrice = async (resultList) => {
   let priceAccumulator = 0
   let counter = 1
   const msgList = resultList.map(order => {
@@ -138,8 +138,7 @@ const sendListWithPrice = (resultList)=> {
   let msg = msgList.join("\n")
   msg = msg + `\n\uDBC0\uDCB4 total: ${priceAccumulator}฿`
 
-  Line.sendMessage(USED_GROUP, msg)
-
+  await Line.sendMessage(USED_GROUP, msg)
 }
 
 router.post("/addprice",async (req,res,next)=>{
