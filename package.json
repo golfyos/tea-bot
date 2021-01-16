@@ -4,9 +4,9 @@
   "private": true,
   "main": "app.js",
   "scripts": {
-    "start": "echo 'Choose dev or prod environment: start:dev OR start:prod'",
-    "start:dev": "NODE_ENV=development&& nodemon ./bin/start --ignore tea-admin/",
-    "start:prod": "NODE_ENV=production&& nodemon ./bin/start --ignore tea-admin/",
+    "start": "yarn start:dev",
+    "start:dev": "NODE_ENV=development nodemon ./bin/start --ignore tea-admin/",
+    "start:prod": "NODE_ENV=production nodemon ./bin/start --ignore tea-admin/",
     "start:react": "cd tea-admin && yarn start",
     "start-docker": "nodemon ./bin/start",
     "test": "mocha --recursive './test/*Test.js' --compilers js:babel-core/register",
