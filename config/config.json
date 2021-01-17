@@ -1,0 +1,12 @@
+{
+    "line": {
+        "clientId": "",
+        "clientSecret": "",
+        "accessToken": "oZdrHK7HW16ATF7lbKdRjRAfYfA5Iuw2eP9pDnkBZegWdltrDKMin98quw33zGaznN+2LyDzEEKQWEjJ9BRRkzGgHakQoDX5/b/BhqxHPEVdAF1WZ8OnvKK/NvmmfZbyesgkgjVzEZd9qKmsRFZfTQdB04t89/1O/w1cDnyilFU=",
+        "groupId": "C6ffd9f64b6a8e781ad445939d38285da"
+    },
+    "db": {
+        "local" : "mongodb://localhost/milktea",
+        "cloud":"mongodb://bot:7AfFrVsS5VMxeNb@ds033750.mlab.com:33750/milktea"
+    }
+}
