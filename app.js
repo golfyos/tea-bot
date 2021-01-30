@@ -4,24 +4,14 @@ import debug from 'debug';
 import express from 'express';
 import logger from 'morgan';
 import path from 'path';
-// import favicon from 'serve-favicon';
 
 import cors from 'cors'
 import index from './routes/index';
-// import session from 'express-session'
 import mongoose from 'mongoose'
-import {usedDatabase} from './config/database'
-const functions = require("firebase-functions")
-
-const USED_DATABASE = usedDatabase
+import config from './config/config.json'
 
 const app = express();
-// const debug = Debug('techberry-bot:app');
-app.set('views', path.join(__dirname, 'views'));
-// view engine setup
-app.set('view engine', 'pug');
-// uncomment after placing your favicon in /public
-// app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -30,13 +20,12 @@ app.use(bodyParser.urlencoded({
 
 app.use(cors())
 
-
-mongoose.connect(USED_DATABASE,{useNewUrlParser:true})
+mongoose.connect(config.db.cloud, { useNewUrlParser:true })
 const db = mongoose.connection
 
 db.on('error',console.error.bind(console,'Connection Error: '))
-db.once('open',()=>{
-  console.log("Database Connected: ", USED_DATABASE)
+db.once('open', () => {
+  console.log("Database Connected: ", config.db.cloud)
 })
 
 app.use(cookieParser());
@@ -46,7 +35,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.get("/*",(req,res,next)=>{
   res.sendFile(path.resolve(__dirname,"public","index.html"))
-  // res.sendFile(path.join(__dirname, 'public','index.html'))
 })
 
 
@@ -59,7 +47,6 @@ app.use((req, res, next) => {
 });
 
 // error handler
-/* eslint no-unused-vars: 0 */
 app.use((err, req, res, next) => {
   console.log("Error: ",err)
   // set locals, only providing error in development
